@@ -1,5 +1,5 @@
 # discord_bot_ac
-A Discord bot used by Animal Crossing players.
+A Discord bot for Animal Crossing players.
 
 Features :
 - Creation of a unique passport for each user with their pseudo in-game, isle, fruit, friend code and a short biography.
