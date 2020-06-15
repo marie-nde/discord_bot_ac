@@ -1,5 +1,8 @@
 const mongoose = require('mongoose');
 
+var dt = new Date();
+dt.setHours( dt.getHours() + 2 );
+
 const dodoSchema = mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId,
     userID: {
@@ -17,6 +20,11 @@ const dodoSchema = mongoose.Schema({
     raison: {
         type: String,
         required: true
+    },
+    createdAt: {
+        type: Date,
+        expires: 10800,
+        default: Date.now
     }
 })
 

@@ -5,11 +5,13 @@ const { prefix, token } = require('./config.js');
 const Data = require('./models/id');
 const Dodo = require ('./models/dodo');
 const Wlist = require ('./models/wlist');
+const Wishlist = require('./models/wishlist');
+const timeOut = new Set();
 
 const client = new Discord.Client();
 client.commands = new Discord.Collection();
 
-mongoose.connect('mongodb://database', {
+mongoose.connect('mongodb://localhost:database', {
     useNewUrlParser: true,
     useFindAndModify: false,
     useCreateIndex:true,
@@ -97,6 +99,7 @@ client.on('message', async message => {
         else if (object === 'dodocode' || object === 'dcode') {
             const why = message.content.slice(prefix.length).split('\"', 2);
 
+            if (why[1] === " ") return message.reply(`la raison doit contenir au moins une lettre.`);
             if (!why[1]) return message.reply(`la commande \`${prefix}create ${object}\` doit être utilisée ainsi :\n\`${prefix}create ${object} <DodoCode> <\"Raison\">\``);
             if (args.length > 2) {
                 const del = await Dodo.findOneAndDelete({
@@ -108,7 +111,7 @@ client.on('message', async message => {
 					userID: message.author.id,
                     serverID: message.guild.id,
                     dodocode: args[1],
-                    raison: why[1]
+                    raison: why[1],
                 });
                 await newDodo.save().catch(err => {
                     console.log(err);
@@ -134,8 +137,9 @@ client.on('message', async message => {
         }
 
         else if (object === 'waitinglist' || object === 'wlist') {
-            if (args.length === 1 || args.length > 11) return message.reply(`la commande \`${prefix}create ${object}\` prend un à dix arguments.\nExemple : \`${prefix}create ${object} <@Membre> <@Membre> <@Membre>\``)
+            if (args.length === 1) return message.reply(`la commande \`${prefix}create ${object}\` prend au moins un argument.\nExemple : \`${prefix}create ${object} <@Membre> <@Membre> <@Membre>\``)
             if (args.length > 1) {
+                var number = 1;
                 for (i = 1; i < args.length; i++) {
                     if (!getUserFromMention(args[i])) break;
                     var number = i;
@@ -148,25 +152,33 @@ client.on('message', async message => {
                     _id: mongoose.Types.ObjectId(),
 					userID: message.author.id,
                     serverID: message.guild.id,
-                    user1: getUserFromMention(args[1]),
-                    user2: getUserFromMention(args[2]),
-                    user3: getUserFromMention(args[3]),
-                    user4: getUserFromMention(args[4]),
-                    user5: getUserFromMention(args[5]),
-                    user6: getUserFromMention(args[6]),
-                    user7: getUserFromMention(args[7]),
-                    user8: getUserFromMention(args[8]),
-                    user9: getUserFromMention(args[9]),
-                    user10: getUserFromMention(args[10]),
-                    num: number
+                    number: number
                 });
-                if (!newWlist.user1) return message.reply(`un ou plusieurs arguments sont erronés.\n\`${prefix}create ${object} <@Membre> <@Membre> <@Membre>\` pour créer une liste d'attente.`);
                 await newWlist.save().catch(err => {
                     console.log(err);
                     return message.reply('les données n\'ont pas pu être mises à jour.');
                 }),
                 message.reply(`les données ont bien été mises à jour.\n\`${prefix}${object}\` pour voir ta liste d'attente.\n\`${prefix}reset ${object}\` pour supprimer ta liste d'attente.\n\`${prefix}next\` pour passer à la personne suivante.`);
         
+                const slice = message.content.slice(prefix.length).split(/ +/);
+                slice.splice(0, 2);
+
+                for (i = 0; i < number; i++) {
+                    const user = client.users.cache.get(getUserFromMention(slice[i]));
+                    if (!user) break;
+                    const update = await Wlist.findOneAndUpdate({
+                        userID: message.author.id,
+                        serverID: message.guild.id
+                    }, {
+                        $push: { users: getUserFromMention(slice[i]) }
+                    });
+                }
+                
+                const toto = await Wlist.findOne({
+                    userID: message.author.id,
+                    serverID: message.guild.id
+                });
+
                 const newDodo = await Dodo.findOne({
                     userID: message.author.id,
                     serverID: message.guild.id
@@ -184,11 +196,45 @@ client.on('message', async message => {
                 newEmbed.setFooter('Bot par Marie#1702');
     
                 message.channel.send(newEmbed);
-                return message.channel.send(`${args[1]}, à ton tour !`);
+                return message.channel.send(`${slice[0]}, à ton tour !`);
             }
     }
+
+        else if (object === 'wishlist') {
+            if (args.length === 1) return message.reply(`la commande \`${prefix}create ${object}\` prend au moins un argument. S'il y en a plusieurs, ils doivent être séparés par une virgule.\nExemple : \`${prefix}create ${object} <Objet>,<Objet>,<Objet>\``)
+            const parse = message.content.slice(prefix.length).split(/ +/);
+            parse.splice(0, 2);
+            const str = parse.join(' ');
+            const wish = str.split(',');
+
+            const del = await Wishlist.findOneAndDelete({
+                userID: message.author.id,
+                serverID: message.guild.id
+            });
+            const newWishlist = new Wishlist({
+                _id: mongoose.Types.ObjectId(),
+                userID: message.author.id,
+                serverID: message.guild.id,
+                number: wish.length
+            });
+            await newWishlist.save().catch(err => {
+                console.log(err);
+                return message.reply('les données n\'ont pas pu être mises à jour.');
+            }),
+            message.reply(`les données ont bien été mises à jour.\n\`${prefix}${object}\` pour voir ta wishlist.\n\`${prefix}reset ${object}\` pour supprimer ta wishlist.\n\`${prefix}wishdelete <Nombre> <Nombre>\` pour supprimer des objets.\n\`${prefix}wishadd <Objet>,<Objet>\` pour ajouter des objets.`)
+            
+            for (i = 0; i < wish.length; i++) {
+                const update = await Wishlist.findOneAndUpdate({
+                    userID: message.author.id,
+                    serverID: message.guild.id
+                }, {
+                    $push: { list: wish[i] },
+                    $set: { number: wish.length }
+                });
+            }
+        }
         else {
-            message.reply(`la commande \`${prefix}create\` sert à créer un passeport, un dodocode ou une liste d'attente.\n\`${prefix}help create\` pour plus d'infos.`);
+            message.reply(`la commande \`${prefix}create\` sert à créer un passeport, un dodocode, une liste d'attente ou une wishlist.\n\`${prefix}help create\` pour plus d'infos.`);
         }
     }
 
@@ -247,6 +293,14 @@ client.on('message', async message => {
             if (!del) return message.reply('aucune liste d\'attente n\'a été trouvée.');
             return message.reply('ta liste d\'attente a bien été effacée.');
         }
+        else if (object === 'wishlist') {
+            const del = await Wishlist.findOneAndDelete({
+                userID: message.author.id,
+                serverID: message.guild.id
+            })
+            if (!del) return message.reply(`aucune wishlist n\'a été trouvée.`);
+            return message.reply(`ta wishlist a bien été effacée.`);
+        }
     }
 
     else if (message.content.startsWith(prefix) && (commandName === 'passeport' || commandName === 'id')) {
@@ -301,7 +355,7 @@ client.on('message', async message => {
                 serverID: message.guild.id
             }).sort();
 
-            if (!res[0] || res.length === 0) return message.channel.send('Aucun dodocode n\'est actif en ce moment !');
+            if (res.length === 0) return message.channel.send('Aucun dodocode n\'est actif en ce moment !');
             let newEmbed = new Discord.MessageEmbed()
                 .setColor(`${color}`)
                 .setTitle('Dodocodes actifs')
@@ -325,7 +379,7 @@ client.on('message', async message => {
                 userID: taggedUser.id,
                 serverID: message.guild.id
             });
-            if (!newData) return message.reply(`l'utilisateur mentionné n'a pas encore ajouté son code ami.`);
+            if (!newData) return message.reply(`aucun code ami n'a été trouvé pour ${taggedUser.username}.`);
 
             let newEmbed = new Discord.MessageEmbed()
                 .setColor(`${color}`)
@@ -341,7 +395,7 @@ client.on('message', async message => {
                 serverID: message.guild.id
             }).sort();
 
-            if (!res[0] || res.length === 0) return message.channel.send('Aucun code ami n\'a été ajouté.');
+            if (res.length === 0) return message.channel.send('Aucun code ami n\'a été ajouté.');
             var page = parseInt(args[0], 10);
             if (isNaN(page)) var page = 1;
             var totalPages = Math.trunc(res.length / 10) + 1;
@@ -375,32 +429,17 @@ client.on('message', async message => {
         });
         if (!newWlist) return message.reply(`aucune donnée n\'a été trouvée. Pour créer une liste d'attente :\n\`${prefix}create ${commandName} <@Membre> <@Membre> <@Membre>\``);
         
+        const list = newWlist.users;
         let newEmbed = new Discord.MessageEmbed()
         .setColor(`${color}`)
         .setTitle(`Liste d'attente de ${taggedUser.username}`)
     // if (newDodo.dodocode) newEmbed.setDescription(`${newDodo.dodocode}`) (A remettre qd y aura le reset de dodocode)
-    if (num != 0) {
-        var user = client.users.cache.get(newWlist.user1);
-        if (newWlist.user1 && newWlist.user1 != 'undefined') newEmbed.addField(`ac!next`, `**1.** ${user.username}`)
-        var user = client.users.cache.get(newWlist.user2);
-        if (newWlist.user2 && newWlist.user2 != 'undefined') newEmbed.addField(`ac!next`, `**2.** ${user.username}`)
-        var user = client.users.cache.get(newWlist.user3);
-        if (newWlist.user3 && newWlist.user3 != 'undefined') newEmbed.addField(`ac!next`, `**3.** ${user.username}`)
-        var user = client.users.cache.get(newWlist.user4);
-        if (newWlist.user4 && newWlist.user4 != 'undefined') newEmbed.addField(`ac!next`, `**4.** ${user.username}`)
-        var user = client.users.cache.get(newWlist.user5);
-        if (newWlist.user5 && newWlist.user5 != 'undefined') newEmbed.addField(`ac!next`, `**5.** ${user.username}`)
-        var user = client.users.cache.get(newWlist.user6);
-        if (newWlist.user6 && newWlist.user6 != 'undefined') newEmbed.addField(`ac!next`, `**6.** ${user.username}`)
-        var user = client.users.cache.get(newWlist.user7);
-        if (newWlist.user7 && newWlist.user7 != 'undefined') newEmbed.addField(`ac!next`, `**7.** ${user.username}`)
-        var user = client.users.cache.get(newWlist.user8);
-        if (newWlist.user8 && newWlist.user8 != 'undefined') newEmbed.addField(`ac!next`, `**8.** ${user.username}`)
-        var user = client.users.cache.get(newWlist.user9);
-        if (newWlist.user9 && newWlist.user9 != 'undefined') newEmbed.addField(`ac!next`, `**9.** ${user.username}`)
-        var user = client.users.cache.get(newWlist.user10);
-        if (newWlist.user10 && newWlist.user10 != 'undefined') newEmbed.addField(`ac!next`, `**10.** ${user.username}`)
-    }
+        for (i = 0; i < newWlist.number; i++) {
+            var user = client.users.cache.get(list[i]);
+            if (!user) break;
+            newEmbed.addField(`ac!next`, `**${i + 1}.** ${user.username}`);
+        }
+    
     newEmbed.setFooter('Bot par Marie#1702');
 
     return message.channel.send(newEmbed);
@@ -411,78 +450,80 @@ client.on('message', async message => {
         const taggedUser = message.mentions.users.first() || message.author;
 
         if (args.length === 1 && taggedUser === message.author && message.author != message.mentions.users.first()) return message.reply(`utilisateur inconnu. Vérifiez que vous avez bien mentionné la personne.`);
-        const check = await Wlist.findOne({
+        const newWlist = await Wlist.findOne({
             userID: taggedUser.id,
 			serverID: message.guild.id
         });
-        if (!check) return message.reply(`aucune donnée n\'a été trouvée. Pour créer une liste d'attente :\n\`${prefix}create ${commandName} <@Membre> <@Membre> <@Membre>\``);
+        if (!newWlist) return message.reply(`aucune donnée n\'a été trouvée. Pour créer une liste d'attente :\n\`${prefix}create ${commandName} <@Membre> <@Membre> <@Membre>\``);
 
-        const del = await Wlist.findOneAndDelete({
+        const modif = await Wlist.findOneAndUpdate({
             userID: taggedUser.id,
             serverID: message.guild.id
+        }, {
+            $pop: { users: -1 },
+            $set: { number: newWlist.number - 1 }
         });
-        const newWlist = new Wlist({
-            _id: mongoose.Types.ObjectId(),
-            userID: taggedUser.id,
-            serverID: message.guild.id,
-            user1: del.user2,
-            user2: del.user3,
-            user3: del.user4,
-            user4: del.user5,
-            user5: del.user6,
-            user6: del.user7,
-            user7: del.user8,
-            user8: del.user9,
-            user9: del.user10,
-            num: del.num - 1
-        });
-        await newWlist.save().catch(err => {
-            console.log(err);
-            return message.reply('les données n\'ont pas pu être mises à jour.');
-        }),
-        message.channel.send ('La liste d\'attente a bien été mise à jour.')
+        message.channel.send('La liste d\'attente a bien été mise à jour.')
 
-        if (newWlist.num === 1) {
+        const newOne = await Wlist.findOne({
+            userID: taggedUser.id,
+			serverID: message.guild.id
+        });
+
+        if (newOne.number === 1) {
             const del = await Wlist.findOneAndDelete({
                 userID: taggedUser.id,
                 serverID: message.guild.id
             });
-            const user = client.users.cache.get(del.user1);
-            return message.channel.send (`${user} est la dernière à venir ! La liste d'attente a été effacée.`);
+            const user = client.users.cache.get(del.users[0]);
+            return message.channel.send (`${user} est la dernière à venir chez ${taggedUser.username} ! La liste d'attente a été effacée.`);
         }
-
+        if (newOne.number === 0) {
+            const del = await Wlist.findOneAndDelete({
+                userID: taggedUser.id,
+                serverID: message.guild.id
+            });
+            return message.channel.send('Il n\'y a plus personne sur la liste d\'attente. La liste a été effacée.')
+        }
+        const list = newOne.users;
         let newEmbed = new Discord.MessageEmbed()
             .setColor(`${color}`)
             .setTitle(`Liste d'attente de ${taggedUser.username}`)
         // if (newDodo.dodocode) newEmbed.setDescription(`${newDodo.dodocode}`) (A remettre qd y aura le reset de dodocode)
-        if (num != 0) {
-            var user = client.users.cache.get(newWlist.user1);
-            if (newWlist.user1 && newWlist.user1 != 'undefined') newEmbed.addField(`ac!next`, `**1.** ${user.username}`)
-            var user = client.users.cache.get(newWlist.user2);
-            if (newWlist.user2 && newWlist.user2 != 'undefined') newEmbed.addField(`ac!next`, `**2.** ${user.username}`)
-            var user = client.users.cache.get(newWlist.user3);
-            if (newWlist.user3 && newWlist.user3 != 'undefined') newEmbed.addField(`ac!next`, `**3.** ${user.username}`)
-            var user = client.users.cache.get(newWlist.user4);
-            if (newWlist.user4 && newWlist.user4 != 'undefined') newEmbed.addField(`ac!next`, `**4.** ${user.username}`)
-            var user = client.users.cache.get(newWlist.user5);
-            if (newWlist.user5 && newWlist.user5 != 'undefined') newEmbed.addField(`ac!next`, `**5.** ${user.username}`)
-            var user = client.users.cache.get(newWlist.user6);
-            if (newWlist.user6 && newWlist.user6 != 'undefined') newEmbed.addField(`ac!next`, `**6.** ${user.username}`)
-            var user = client.users.cache.get(newWlist.user7);
-            if (newWlist.user7 && newWlist.user7 != 'undefined') newEmbed.addField(`ac!next`, `**7.** ${user.username}`)
-            var user = client.users.cache.get(newWlist.user8);
-            if (newWlist.user8 && newWlist.user8 != 'undefined') newEmbed.addField(`ac!next`, `**8.** ${user.username}`)
-            var user = client.users.cache.get(newWlist.user9);
-            if (newWlist.user9 && newWlist.user9 != 'undefined') newEmbed.addField(`ac!next`, `**9.** ${user.username}`)
-            var user = client.users.cache.get(newWlist.user10);
-            if (newWlist.user10 && newWlist.user10 != 'undefined') newEmbed.addField(`ac!next`, `**10.** ${user.username}`)
+        for (i = 0; i < newOne.number; i++) {
+            var user = client.users.cache.get(list[i]);
+            if (!user) break;
+            newEmbed.addField(`ac!next`, `**${i + 1}.** ${user.username}`);
         }
         newEmbed.setFooter('Bot par Marie#1702');
 
         message.channel.send(newEmbed);
 
-        var user = client.users.cache.get(newWlist.user1);
+        var user = client.users.cache.get(newOne.users[0]);
         return message.channel.send(`${user}, à ton tour !`);
+    }
+
+    else if (message.content.startsWith(prefix) && (commandName === 'wishlist')) {
+        if (args.length > 1) return message.reply(`la commande \`${prefix}${commandName}\` prend 0 ou 1 argument.\nPour afficher sa propre wishlist : \`${prefix}${commandName}\`\nPour afficher la wishlist de quelqu'un d'autre : \`${prefix}${commandName} <@Membre>\``);
+        const taggedUser = message.mentions.users.first() || message.author;
+
+        if (args.length === 1 && taggedUser === message.author && message.author != message.mentions.users.first()) return message.reply(`utilisateur inconnu. Pour afficher la wishlist d'un.e autre membre :\n\`${prefix}${commandName} <@Membre>\``);
+        const newWishlist = await Wishlist.findOne({
+            userID: taggedUser.id,
+            serverID: message.guild.id
+        });
+        if (!newWishlist) return message.reply(`aucune wishlist n'a été trouvée pour ${taggedUser.username}.`);
+
+        const items = newWishlist.list;
+        let newEmbed = new Discord.MessageEmbed()
+            .setColor(`${color}`)
+            .setTitle(`Wishlist de ${taggedUser.username}`)
+        for (i = 0; i < newWishlist.number; i++) {
+            newEmbed.addField(`${i + 1}.`, `${items[i]}`);
+        }
+            newEmbed.setFooter(`Bot par Marie#1702`);
+
+        return message.channel.send(newEmbed);
     }
 
     if (answered === false && message.author.id === userCard) {

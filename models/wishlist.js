@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const wlistSchema = mongoose.Schema({
+const wishlistSchema = mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId,
     userID: {
         type: String,
@@ -10,7 +10,7 @@ const wlistSchema = mongoose.Schema({
         type: String,
         required: true
     },
-    users: [
+    list: [
         { type: String }
     ],
     number: {
@@ -19,4 +19,4 @@ const wlistSchema = mongoose.Schema({
     }
 })
 
-module.exports = mongoose.model('Wlist', wlistSchema);
+module.exports = mongoose.model('Wishlist', wishlistSchema);
