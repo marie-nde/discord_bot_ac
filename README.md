@@ -11,9 +11,10 @@ Features :
 - Possibility to reset every data (passport, dodocode, waiting list).
 - A random game with cards.
 - A hidden command which can only be used by me.
+- Creation of a wishlist with several items.
 
 In coming :
-- System of wishlist and list of crafts
-- A command help
+- System of list of crafts
+- A help command
 
 I'll add a wiki of every command once the bot is finished.
