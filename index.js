@@ -6,7 +6,6 @@ const Data = require('./models/id');
 const Dodo = require ('./models/dodo');
 const Wlist = require ('./models/wlist');
 const Wishlist = require('./models/wishlist');
-const timeOut = new Set();
 
 const client = new Discord.Client();
 client.commands = new Discord.Collection();
@@ -137,13 +136,14 @@ client.on('message', async message => {
         }
 
         else if (object === 'waitinglist' || object === 'wlist') {
-            if (args.length === 1) return message.reply(`la commande \`${prefix}create ${object}\` prend au moins un argument.\nExemple : \`${prefix}create ${object} <@Membre> <@Membre> <@Membre>\``)
+            if (args.length === 1) return message.reply(`la commande \`${prefix}create ${object}\` prend au moins un argument.\n\`${prefix}create ${object} <@Membre> <@Membre> <@Membre>\``)
             if (args.length > 1) {
-                var number = 1;
-                for (i = 1; i < args.length; i++) {
+                var number = 0;
+                for (i = 1; i < args.length + 1; i++) {
                     if (!getUserFromMention(args[i])) break;
                     var number = i;
                 }
+                if (number === 0) return message.reply(`utilisateur introuvable.\nPour créer une liste d'attente : \`${prefix}create ${object} <@Membre> <@Membre> <@Membre>\``);
                 const del = await Wlist.findOneAndDelete({
                     userID: message.author.id,
                     serverID: message.guild.id
@@ -187,11 +187,11 @@ client.on('message', async message => {
                 let newEmbed = new Discord.MessageEmbed()
                     .setColor(`${color}`)
                     .setTitle(`Liste d'attente de ${message.author.username}`)
-                // if (newDodo.dodocode) newEmbed.setDescription(`${newDodo.dodocode}`) (A remettre qd y aura le reset de dodocode)
+                if (newDodo) newEmbed.setDescription(`${newDodo.dodocode}`)
                 for (i = 1; i < args.length; i++) {
                     const user = client.users.cache.get(getUserFromMention(args[i]));
                     if (!user) break;
-                    newEmbed.addField(`ac!next`, `**${i}.** ${user.username}`)
+                    newEmbed.addField(`ac!next`, `**${i}.** ${user.username}`);
                 }
                 newEmbed.setFooter('Bot par Marie#1702');
     
@@ -429,11 +429,16 @@ client.on('message', async message => {
         });
         if (!newWlist) return message.reply(`aucune donnée n\'a été trouvée. Pour créer une liste d'attente :\n\`${prefix}create ${commandName} <@Membre> <@Membre> <@Membre>\``);
         
+        const newDodo = await Dodo.findOne({
+            userID: taggedUser.id,
+            serverID: message.guild.id
+        });
+
         const list = newWlist.users;
         let newEmbed = new Discord.MessageEmbed()
         .setColor(`${color}`)
         .setTitle(`Liste d'attente de ${taggedUser.username}`)
-    // if (newDodo.dodocode) newEmbed.setDescription(`${newDodo.dodocode}`) (A remettre qd y aura le reset de dodocode)
+        if (newDodo) newEmbed.setDescription(`${newDodo.dodocode}`);
         for (i = 0; i < newWlist.number; i++) {
             var user = client.users.cache.get(list[i]);
             if (!user) break;
@@ -454,7 +459,7 @@ client.on('message', async message => {
             userID: taggedUser.id,
 			serverID: message.guild.id
         });
-        if (!newWlist) return message.reply(`aucune donnée n\'a été trouvée. Pour créer une liste d'attente :\n\`${prefix}create ${commandName} <@Membre> <@Membre> <@Membre>\``);
+        if (!newWlist) return message.reply(`aucune donnée n\'a été trouvée. Pour créer une liste d'attente :\n\`${prefix}create waitinglist <@Membre> <@Membre> <@Membre>\``);
 
         const modif = await Wlist.findOneAndUpdate({
             userID: taggedUser.id,
@@ -463,7 +468,7 @@ client.on('message', async message => {
             $pop: { users: -1 },
             $set: { number: newWlist.number - 1 }
         });
-        message.channel.send('La liste d\'attente a bien été mise à jour.')
+        message.channel.send('Les données ont bien été mises à jour.')
 
         const newOne = await Wlist.findOne({
             userID: taggedUser.id,
@@ -485,11 +490,16 @@ client.on('message', async message => {
             });
             return message.channel.send('Il n\'y a plus personne sur la liste d\'attente. La liste a été effacée.')
         }
+        const newDodo = await Dodo.findOne({
+            userID: taggedUser.id,
+            serverID: message.guild.id
+        });
+
         const list = newOne.users;
         let newEmbed = new Discord.MessageEmbed()
             .setColor(`${color}`)
             .setTitle(`Liste d'attente de ${taggedUser.username}`)
-        // if (newDodo.dodocode) newEmbed.setDescription(`${newDodo.dodocode}`) (A remettre qd y aura le reset de dodocode)
+        if (newDodo) newEmbed.setDescription(`${newDodo.dodocode}`);
         for (i = 0; i < newOne.number; i++) {
             var user = client.users.cache.get(list[i]);
             if (!user) break;
@@ -519,10 +529,132 @@ client.on('message', async message => {
             .setColor(`${color}`)
             .setTitle(`Wishlist de ${taggedUser.username}`)
         for (i = 0; i < newWishlist.number; i++) {
-            newEmbed.addField(`${i + 1}.`, `${items[i]}`);
+            newEmbed.addField(`\u200b`, `**${i + 1}.** ${items[i]}`);
         }
             newEmbed.setFooter(`Bot par Marie#1702`);
 
+        return message.channel.send(newEmbed);
+    }
+
+    else if (message.content.startsWith(prefix) && (commandName === 'add')) {
+        if (args.length < 1) return message.reply(`la commande \`${prefix}${commandName}\` prend au moins un argument.\nPour ajouter des membres à sa liste d'attente : \`${prefix}${commandName} <@Membre> <@Membre>\``);
+        var number = 0;
+        for (i = 0; i < args.length; i++) {
+            if (!getUserFromMention(args[i])) break;
+            number++;
+        }
+        if (number === 0) return message.reply(`utilisateur introuvable.\nPour ajouter des membres à sa liste d'attente : \`${prefix}${commandName} <@Membre> <@Membre>\``);
+        
+        const newWlist = await Wlist.findOne({
+            userID: message.author.id,
+            serverID: message.guild.id
+        })
+        if (!newWlist) return message.reply(`aucune donnée n'a été trouvée. Pour créer une liste d'attente :\n\`${prefix}create waitinglist <@Membre> <@Membre>\``);
+    
+        for (i = 0; i < number; i++) {
+            const update = await Wlist.findOneAndUpdate({
+                userID: message.author.id,
+                serverID: message.guild.id
+                }, {
+                    $push: { users: getUserFromMention(args[i]) },
+                    $set: { number: newWlist.number + number }
+                })
+        }
+        message.channel.send(`Les données ont bien été mises à jour.`);
+
+        const newOne = await Wlist.findOne({
+            userID: message.author.id,
+            serverID: message.guild.id
+        })
+        const newDodo = await Dodo.findOne({
+            userID: message.author.id,
+            serverID: message.guild.id
+        })
+
+        const list = newOne.users;
+        let newEmbed = new Discord.MessageEmbed()
+            .setColor(`${color}`)
+            .setTitle(`Liste d'attente de ${message.author.username}`)
+        if (newDodo) newEmbed.setDescription(`${newDodo.dodocode}`);
+        for (i = 0; i < newOne.number; i++) {
+            var user = client.users.cache.get(list[i]);
+            if (!user) break;
+            newEmbed.addField(`ac!next`, `**${i + 1}.** ${user.username}`);
+        }
+        newEmbed.setFooter('Bot par Marie#1702');
+        return message.channel.send(newEmbed);
+    }
+
+    else if (message.content.startsWith(prefix) && (commandName === 'delete')) {
+        if (args.length < 1) return message.reply(`la commande \`${prefix}${commandName}\` prend au moins un argument.\nPour supprimer des membres de sa liste d'attente : \`${prefix}${commandName} <@Membre> <@Membre>\``);
+        var number = 0;
+        for (i = 0; i < args.length; i++) {
+            if (!getUserFromMention(args[i])) break;
+            number++;
+        }
+        if (number === 0) return message.reply(`utilisateur introuvable.\nPour ajouter des membres à sa liste d'attente : \`${prefix}${commandName} <@Membre> <@Membre>\``);
+        
+        const newWlist = await Wlist.findOne({
+            userID: message.author.id,
+            serverID: message.guild.id
+        })
+        if (!newWlist) return message.reply(`aucune donnée n'a été trouvée. Pour créer une liste d'attente :\n\`${prefix}create waitinglist <@Membre> <@Membre>\``);
+        
+        for (i = 1; i < args.length; i++) {
+            if (args[0] === args[i]) {
+                args.splice(i, 1);
+            }
+        }
+        
+        var temp = -1;
+        for (i = 0; i < args.length; i++) {
+            for (j = 0; j < newWlist.users.length; j++) {
+                if (getUserFromMention(args[i]) === newWlist.users[j]) temp++;
+            }
+        }
+        if (temp === -1) temp = 0;
+        number = number + temp;
+
+        for (i = 0; i < number; i++) {
+            const update = await Wlist.findOneAndUpdate({
+                userID: message.author.id,
+                serverID: message.guild.id
+                }, {
+                    $pull: { users: getUserFromMention(args[i]) },
+                    $set: { number: newWlist.number - number }
+                })
+        }
+        message.channel.send(`Les données ont bien été mises à jour.`);
+
+        const newOne = await Wlist.findOne({
+            userID: message.author.id,
+            serverID: message.guild.id
+        })
+        const newDodo = await Dodo.findOne({
+            userID: message.author.id,
+            serverID: message.guild.id
+        })
+
+        if (newOne.number < 2) {
+            const del = await Wlist.findOneAndDelete({
+                userID: message.author.id,
+                serverID: message.guild.id
+            });
+            var user = client.users.cache.get(newOne.users[0]);
+            return message.channel.send(`${user} est la dernière à venir chez ${message.author.username} ! La liste d'attente a été effacée.`);
+        }
+
+        const list = newOne.users;
+        let newEmbed = new Discord.MessageEmbed()
+            .setColor(`${color}`)
+            .setTitle(`Liste d'attente de ${message.author.username}`)
+        if (newDodo) newEmbed.setDescription(`${newDodo.dodocode}`);
+        for (i = 0; i < newOne.number; i++) {
+            var user = client.users.cache.get(list[i]);
+            if (!user) break;
+            newEmbed.addField(`ac!next`, `**${i + 1}.** ${user.username}`);
+        }
+        newEmbed.setFooter('Bot par Marie#1702');
         return message.channel.send(newEmbed);
     }
 
