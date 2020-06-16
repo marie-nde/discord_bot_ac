@@ -10,7 +10,7 @@ const Wishlist = require('./models/wishlist');
 const client = new Discord.Client();
 client.commands = new Discord.Collection();
 
-mongoose.connect('mongodb://localhost:database', {
+mongoose.connect('mongodb://localhost:27017/data', {
     useNewUrlParser: true,
     useFindAndModify: false,
     useCreateIndex:true,
@@ -232,6 +232,21 @@ client.on('message', async message => {
                     $set: { number: wish.length }
                 });
             }
+
+            const Wish = await Wishlist.findOne({
+                userID: message.author.id,
+                serverID: message.guild.id
+            })
+
+            const list = Wish.list;
+            let newEmbed = new Discord.MessageEmbed()
+                .setColor(`${color}`)
+                .setTitle(`Wishlist de ${message.author.username}`)
+            for (i = 0; i < Wish.number; i++) {
+                newEmbed.addField(`\u200b`, `**${i + 1}.** ${list[i]}`);
+            }
+            newEmbed.setFooter('Bot par Marie#1702');
+            return message.channel.send(newEmbed);
         }
         else {
             message.reply(`la commande \`${prefix}create\` sert à créer un passeport, un dodocode, une liste d'attente ou une wishlist.\n\`${prefix}help create\` pour plus d'infos.`);
@@ -606,7 +621,7 @@ client.on('message', async message => {
             }
         }
         
-        var temp = -1;
+        var temp = args.length * -1;
         for (i = 0; i < args.length; i++) {
             for (j = 0; j < newWlist.users.length; j++) {
                 if (getUserFromMention(args[i]) === newWlist.users[j]) temp++;
@@ -635,13 +650,20 @@ client.on('message', async message => {
             serverID: message.guild.id
         })
 
-        if (newOne.number < 2) {
+        if (newOne.number === 1) {
             const del = await Wlist.findOneAndDelete({
                 userID: message.author.id,
                 serverID: message.guild.id
             });
             var user = client.users.cache.get(newOne.users[0]);
             return message.channel.send(`${user} est la dernière à venir chez ${message.author.username} ! La liste d'attente a été effacée.`);
+        }
+        if (newOne.number === 0) {
+            const del = await Wlist.findOneAndDelete({
+                userID: message.author.id,
+                serverID: message.guild.id
+            });
+            return message.channel.send(`La dernière personne a été retirée de la liste. La liste d'attente a été effacée.`);
         }
 
         const list = newOne.users;
@@ -658,6 +680,104 @@ client.on('message', async message => {
         return message.channel.send(newEmbed);
     }
 
+    else if (message.content.startsWith(prefix) && (commandName === 'wishadd')) {
+        if (args.length < 1) return message.reply(`la commande \`${prefix}${commandName}\` prend au moins un argument.\nPour ajouter des objets à sa wishlist : \`${prefix}${commandName} <Objet>,<Objet>,<Objet>\``);
+        const newWishlist = await Wishlist.findOne({
+            userID: message.author.id,
+            serverID: message.guild.id
+        });
+        if (!newWishlist) return message.reply(`aucune donnée n'a été trouvée. Pour créer une wishlist :\n\`${prefix}create wishlist <Objet>,<Objet>,<Objet>\``);
+    
+        const parse = message.content.slice(prefix.length).split(/ +/);
+        parse.splice(0, 1);
+        const str = parse.join(' ');
+        const wish = str.split(',');
+        
+        for (i = 0; i < wish.length; i++) {
+            const update = await Wishlist.findOneAndUpdate({
+                userID: message.author.id,
+                serverID: message.guild.id
+                }, {
+                    $push: { list: wish[i] },
+                    $set: { number: newWishlist.number + wish.length }
+                })
+        }
+        message.channel.send(`Les données ont bien été mises à jour.`);
+
+        const Wish = await Wishlist.findOne({
+            userID: message.author.id,
+            serverID: message.guild.id
+        })
+
+        const list = Wish.list;
+        let newEmbed = new Discord.MessageEmbed()
+            .setColor(`${color}`)
+            .setTitle(`Wishlist de ${message.author.username}`)
+        for (i = 0; i < Wish.number; i++) {
+            newEmbed.addField(`\u200b`, `**${i + 1}.** ${list[i]}`);
+        }
+        newEmbed.setFooter('Bot par Marie#1702');
+        return message.channel.send(newEmbed);
+    }
+
+    else if (message.content.startsWith(prefix) && (commandName === 'wishdel' || commandName === 'wishdelete')) {
+        if (args.length < 1) return message.reply(`la commande \`${prefix}${commandName}\` prend au moins un argument.\nPour supprimer des objets de sa wishlist : \`${prefix}${commandName} <Numéro> <Numéro> <Numéro>\``);
+        const newWishlist = await Wishlist.findOne({
+            userID: message.author.id,
+            serverID: message.guild.id
+        })
+        if (!newWishlist) return message.reply(`aucune donnée n'a été trouvée. Pour créer une wishlist :\n\`${prefix}create wishlist <Objet>,<Objet>,<Objet>\``);
+
+        for (i = 0; i < args.length; i++) {
+            if (isNaN(parseInt(args[i], 10))) return message.reply(`un ou plusieurs arguments sont erronés. Tous les arguments doivent être des numéros correspondant à la place de l'objet dans la wishlist.`);
+            if (parseInt(args[i], 10) > newWishlist.number) return message.reply(`un ou plusieurs arguments sont erronés. Vérifiez que vous ne tentez pas d'effacer un objet qui n'existe pas.`);
+        }
+        if (args.length > newWishlist.number) return message.channel.send (`Erreur : il y a plus d'arguments que d'objets dans la wishlist.`);
+
+        const remove = newWishlist.list;
+        for (i = 0; i < args.length; i++) {
+            remove.splice(parseInt(args[i] - 1, 10), 1);
+        }
+        const suppr = await Wishlist.findOneAndDelete({
+            userID: message.author.id,
+            serverID: message.guild.id
+        });
+        const newWish = new Wishlist({
+            _id: mongoose.Types.ObjectId(),
+            userID: message.author.id,
+            serverID: message.guild.id,
+            list: remove,
+            number: remove.length
+        });
+        await newWish.save().catch(err => {
+            console.log(err);
+            return message.reply('les données n\'ont pas pu être mises à jour.');
+        }),
+        message.channel.send(`Les données ont bien été mises à jour.`);
+
+        if (remove.length < 1) {
+            const del = await Wishlist.findOneAndDelete({
+                userID: message.author.id,
+                serverID: message.guild.id
+            });
+            return message.reply(`la wishlist est vide. Elle a donc été effacée.`);
+        }
+        const newOne = await Wishlist.findOne({
+            userID: message.author.id,
+            serverID: message.guild.id
+        })
+
+        const list = newOne.list;
+        let newEmbed = new Discord.MessageEmbed()
+            .setColor(`${color}`)
+            .setTitle(`Wishlist de ${message.author.username}`)
+        for (i = 0; i < newOne.number; i++) {
+            newEmbed.addField(`\u200b`, `**${i + 1}.** ${list[i]}`);
+        }
+        newEmbed.setFooter('Bot par Marie#1702');
+        return message.channel.send(newEmbed);
+    }
+
     if (answered === false && message.author.id === userCard) {
         number = 4;
         var random = Math.floor(Math.random() * (number - 1 + 1)) + 1;
@@ -667,16 +787,23 @@ client.on('message', async message => {
             case 3: answer = "pique"; break;
             case 4: answer = "carreau"; break;
         }
+
         if (message.content.startsWith("coeur")) var num = 1;
         else if (message.content.startsWith("trèfle")) var num = 2;
         else if (message.content.startsWith("pique")) var num = 3;
         else if (message.content.startsWith("carreau")) var num = 4;
 
+        if (answer === "pique") var emoji = '♠️';
+        else if (answer === "trèfle") var emoji = '♣️';
+        else if (answer === "coeur") var emoji = '❤️';
+        else if (answer === "carreau") var emoji = '♦️';
+
         if (num === random) {
+            message.react(emoji);
             message.reply('bonne réponse ! On dirait bien que je vais emménager bientôt !');
         }
         else {
-            message.reply(`et non, pas cette fois ! J\'ai tiré la carte ${answer} !`);
+            message.reply(`et non, pas cette fois ! J\'ai tiré la carte ${answer} ${emoji} !`);
         }
         answered = true; userCard = ""; answer = "";
         return;
