@@ -12,9 +12,10 @@ Features :
 - A random game with cards.
 - A hidden command which can only be used by me.
 - Creation of a wishlist with several items.
+- Creation of a list of crafts.
 
 In coming :
-- System of list of crafts
 - A help command
+- Refund of all the command names
 
 I'll add a wiki of every command once the bot is finished.
