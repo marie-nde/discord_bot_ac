@@ -949,7 +949,7 @@ client.on('message', async message => {
         })
 
         if (newOne.number < 1) {
-            const del = await Wishlist.findOneAndDelete({
+            const del = await Data.findOneAndDelete({
                 userID: message.author.id,
                 serverID: message.guild.id
             });
