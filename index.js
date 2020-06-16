@@ -6,6 +6,7 @@ const Data = require('./models/id');
 const Dodo = require ('./models/dodo');
 const Wlist = require ('./models/wlist');
 const Wishlist = require('./models/wishlist');
+const Craft = require('./models/craft');
 
 const client = new Discord.Client();
 client.commands = new Discord.Collection();
@@ -221,7 +222,7 @@ client.on('message', async message => {
                 console.log(err);
                 return message.reply('les données n\'ont pas pu être mises à jour.');
             }),
-            message.reply(`les données ont bien été mises à jour.\n\`${prefix}${object}\` pour voir ta wishlist.\n\`${prefix}reset ${object}\` pour supprimer ta wishlist.\n\`${prefix}wishdelete <Nombre> <Nombre>\` pour supprimer des objets.\n\`${prefix}wishadd <Objet>,<Objet>\` pour ajouter des objets.`)
+            message.reply(`les données ont bien été mises à jour.\n\`${prefix}${object}\` pour voir ta wishlist.\n\`${prefix}reset ${object}\` pour supprimer ta wishlist.\n\`${prefix}wishdelete <Numéro> <Numéro>\` pour supprimer des objets.\n\`${prefix}wishadd <Objet>,<Objet>\` pour ajouter des objets.`)
             
             for (i = 0; i < wish.length; i++) {
                 const update = await Wishlist.findOneAndUpdate({
@@ -248,8 +249,60 @@ client.on('message', async message => {
             newEmbed.setFooter('Bot par Marie#1702');
             return message.channel.send(newEmbed);
         }
+        else if (object === 'craft') {
+            if (args.length === 1) return message.reply(`la commande \`${prefix}create ${object}\` prend au moins un argument. S'il y en a plusieurs, ils doivent être séparés par une virgule.\nExemple : \`${prefix}create ${object} <Objet>,<Objet>,<Objet>\``)
+            const parse = message.content.slice(prefix.length).split(/ +/);
+            parse.splice(0, 2);
+            const str = parse.join(' ');
+            const wish = str.split(',');
+
+            const del = await Craft.findOneAndDelete({
+                userID: message.author.id,
+                serverID: message.guild.id
+            });
+            const newCraft = new Craft({
+                _id: mongoose.Types.ObjectId(),
+                userID: message.author.id,
+                serverID: message.guild.id,
+                number: wish.length
+            });
+            await newCraft.save().catch(err => {
+                console.log(err);
+                return message.reply('les données n\'ont pas pu être mises à jour.');
+            }),
+            message.reply(`les données ont bien été mises à jour.\n\`${prefix}${object}\` pour voir ta liste de crafts en double.\n\`${prefix}reset ${object}\` pour supprimer ta liste.\n\`${prefix}craftdelete <Numéro> <Numéro>\` pour supprimer des crafts.\n\`${prefix}craftadd <Objet>,<Objet>\` pour ajouter des crafts.`)
+            
+            for (i = 0; i < wish.length; i++) {
+                const update = await Craft.findOneAndUpdate({
+                    userID: message.author.id,
+                    serverID: message.guild.id
+                }, {
+                    $push: { list: wish[i] }
+                });
+            }
+
+            const Craftlist = await Craft.findOne({
+                userID: message.author.id,
+                serverID: message.guild.id
+            })
+            const newData = await Data.findOne({
+                userID: message.author.id,
+                serverID: message.guild.id
+            })
+
+            const list = Craftlist.list;
+            let newEmbed = new Discord.MessageEmbed()
+                .setColor(`${color}`)
+                .setTitle(`Liste de crafts de ${message.author.username}`)
+            if (newData) newEmbed.setDescription(`Sur ${newData.ile}`);
+            for (i = 0; i < Craftlist.number; i++) {
+                newEmbed.addField(`\u200b`, `**${i + 1}.** ${list[i]}`);
+            }
+            newEmbed.setFooter('Bot par Marie#1702');
+            return message.channel.send(newEmbed);
+        }
         else {
-            message.reply(`la commande \`${prefix}create\` sert à créer un passeport, un dodocode, une liste d'attente ou une wishlist.\n\`${prefix}help create\` pour plus d'infos.`);
+            message.reply(`la commande \`${prefix}create\` sert à créer un passeport, un dodocode, une liste d'attente, une wishlist, ou une liste de crafts.\n\`${prefix}help create\` pour plus d'infos.`);
         }
     }
 
@@ -316,6 +369,15 @@ client.on('message', async message => {
             if (!del) return message.reply(`aucune wishlist n\'a été trouvée.`);
             return message.reply(`ta wishlist a bien été effacée.`);
         }
+        else if (object === 'craft') {
+            const del = await Craft.findOneAndDelete({
+                userID: message.author.id,
+                serverID: message.guild.id
+            })
+            if (!del) return message.reply(`aucune liste de crafts n\'a été trouvée.`);
+            return message.reply(`ta liste de crafts a bien été effacée.`);
+        }
+        if (!args.length) return message.reply(`la commande \`${prefix}${commandName}\` sert à effacer un passeport, un dodocode, une liste d'attente, une wishlist et une liste de crafts.\n\`${prefix}help reset\` pour plus d'infos.`);
     }
 
     else if (message.content.startsWith(prefix) && (commandName === 'passeport' || commandName === 'id')) {
@@ -680,6 +742,35 @@ client.on('message', async message => {
         return message.channel.send(newEmbed);
     }
 
+    else if (message.content.startsWith(prefix) && (commandName === 'craft')) {
+        if (args.length > 1) return message.reply(`la commande \`${prefix}${commandName}\` prend 0 ou 1 argument.\nPour afficher sa propre liste de crafts : \`${prefix}${commandName}\`\nPour afficher la liste de crafts de quelqu'un d'autre : \`${prefix}${commandName} <@Membre>\``);
+        const taggedUser = message.mentions.users.first() || message.author;
+
+        if (args.length === 1 && taggedUser === message.author && message.author != message.mentions.users.first()) return message.reply(`utilisateur inconnu. Pour afficher la liste de crafts d'un.e autre membre :\n\`${prefix}${commandName} <@Membre>\``);
+        const newCraft = await Craft.findOne({
+            userID: taggedUser.id,
+            serverID: message.guild.id
+        });
+        if (!newCraft) return message.reply(`aucune liste de crafts n'a été trouvée pour ${taggedUser.username}.`);
+
+        const newData = await Data.findOne({
+            userID: taggedUser.id,
+            serverID: message.guild.id
+        })
+
+        const items = newCraft.list;
+        let newEmbed = new Discord.MessageEmbed()
+            .setColor(`${color}`)
+            .setTitle(`Liste de crafts de ${taggedUser.username}`)
+        if (newData) newEmbed.setDescription(`Sur ${newData.ile}`);
+        for (i = 0; i < newCraft.number; i++) {
+            newEmbed.addField(`\u200b`, `**${i + 1}.** ${items[i]}`);
+        }
+            newEmbed.setFooter(`Bot par Marie#1702`);
+
+        return message.channel.send(newEmbed);
+    }
+
     else if (message.content.startsWith(prefix) && (commandName === 'wishadd')) {
         if (args.length < 1) return message.reply(`la commande \`${prefix}${commandName}\` prend au moins un argument.\nPour ajouter des objets à sa wishlist : \`${prefix}${commandName} <Objet>,<Objet>,<Objet>\``);
         const newWishlist = await Wishlist.findOne({
@@ -733,36 +824,78 @@ client.on('message', async message => {
             if (parseInt(args[i], 10) > newWishlist.number) return message.reply(`un ou plusieurs arguments sont erronés. Vérifiez que vous ne tentez pas d'effacer un objet qui n'existe pas.`);
         }
         if (args.length > newWishlist.number) return message.channel.send (`Erreur : il y a plus d'arguments que d'objets dans la wishlist.`);
-
-        const remove = newWishlist.list;
+        
         for (i = 0; i < args.length; i++) {
-            remove.splice(parseInt(args[i] - 1, 10), 1);
+            var num = parseInt(args[i] - 1, 10);
+            var str = newWishlist.list[num];
+            const update = await Wishlist.findOneAndUpdate({
+                userID: message.author.id,
+                serverID: message.guild.id
+                }, {
+                    $pull: { list: str },
+                    $set: { number: newWishlist.number - args.length }
+                })
         }
-        const suppr = await Wishlist.findOneAndDelete({
-            userID: message.author.id,
-            serverID: message.guild.id
-        });
-        const newWish = new Wishlist({
-            _id: mongoose.Types.ObjectId(),
-            userID: message.author.id,
-            serverID: message.guild.id,
-            list: remove,
-            number: remove.length
-        });
-        await newWish.save().catch(err => {
-            console.log(err);
-            return message.reply('les données n\'ont pas pu être mises à jour.');
-        }),
         message.channel.send(`Les données ont bien été mises à jour.`);
 
-        if (remove.length < 1) {
+        const newOne = await Wishlist.findOne({
+            userID: message.author.id,
+            serverID: message.guild.id
+        })
+        const newData = await Data.findOne({
+            userID: message.author.id,
+            serverID: message.guild.id
+        })
+
+        if (newOne.number < 1) {
             const del = await Wishlist.findOneAndDelete({
                 userID: message.author.id,
                 serverID: message.guild.id
             });
             return message.reply(`la wishlist est vide. Elle a donc été effacée.`);
         }
-        const newOne = await Wishlist.findOne({
+
+        const list = newOne.list;
+        let newEmbed = new Discord.MessageEmbed()
+            .setColor(`${color}`)
+            .setTitle(`Wishlist de ${message.author.username}`)
+        if (newData) newEmbed.setDescription(`Sur ${newData.ile}`);
+        for (i = 0; i < newOne.number; i++) {
+            newEmbed.addField(`\u200b`, `**${i + 1}.** ${list[i]}`);
+        }
+        newEmbed.setFooter('Bot par Marie#1702');
+        return message.channel.send(newEmbed);
+    }
+
+    else if (message.content.startsWith(prefix) && (commandName === 'craftadd')) {
+        if (args.length < 1) return message.reply(`la commande \`${prefix}${commandName}\` prend au moins un argument.\nPour ajouter des objets à sa liste de crafts : \`${prefix}${commandName} <Objet>,<Objet>,<Objet>\``);
+        const newCraft = await Craft.findOne({
+            userID: message.author.id,
+            serverID: message.guild.id
+        });
+        if (!newCraft) return message.reply(`aucune donnée n'a été trouvée. Pour créer une liste de crafts :\n\`${prefix}create craft <Objet>,<Objet>,<Objet>\``);
+    
+        const parse = message.content.slice(prefix.length).split(/ +/);
+        parse.splice(0, 1);
+        const str = parse.join(' ');
+        const wish = str.split(',');
+        
+        for (i = 0; i < wish.length; i++) {
+            const update = await Craft.findOneAndUpdate({
+                userID: message.author.id,
+                serverID: message.guild.id
+                }, {
+                    $push: { list: wish[i] },
+                    $set: { number: newCraft.number + wish.length }
+                })
+        }
+        message.channel.send(`Les données ont bien été mises à jour.`);
+
+        const newOne = await Craft.findOne({
+            userID: message.author.id,
+            serverID: message.guild.id
+        })
+        const newData = await Data.findOne({
             userID: message.author.id,
             serverID: message.guild.id
         })
@@ -770,7 +903,64 @@ client.on('message', async message => {
         const list = newOne.list;
         let newEmbed = new Discord.MessageEmbed()
             .setColor(`${color}`)
-            .setTitle(`Wishlist de ${message.author.username}`)
+            .setTitle(`Liste de crafts de ${message.author.username}`)
+        if (newData) newEmbed.setDescription(`Sur ${newData.ile}`);
+        for (i = 0; i < newOne.number; i++) {
+            newEmbed.addField(`\u200b`, `**${i + 1}.** ${list[i]}`);
+        }
+        newEmbed.setFooter('Bot par Marie#1702');
+        return message.channel.send(newEmbed);
+    }
+
+    else if (message.content.startsWith(prefix) && (commandName === 'craftdel' || commandName === 'craftdelete')) {
+        if (args.length < 1) return message.reply(`la commande \`${prefix}${commandName}\` prend au moins un argument.\nPour supprimer des objets de sa liste de crafts : \`${prefix}${commandName} <Numéro> <Numéro> <Numéro>\``);
+        const newCraft = await Craft.findOne({
+            userID: message.author.id,
+            serverID: message.guild.id
+        })
+        if (!newCraft) return message.reply(`aucune donnée n'a été trouvée. Pour créer une liste de crafts :\n\`${prefix}create craft <Objet>,<Objet>,<Objet>\``);
+
+        for (i = 0; i < args.length; i++) {
+            if (isNaN(parseInt(args[i], 10))) return message.reply(`un ou plusieurs arguments sont erronés. Tous les arguments doivent être des numéros correspondant à la place de l'objet dans la liste de crafts.`);
+            if (parseInt(args[i], 10) > newCraft.number) return message.reply(`un ou plusieurs arguments sont erronés. Vérifiez que vous ne tentez pas d'effacer un objet qui n'existe pas.`);
+        }
+        if (args.length > newCraft.number) return message.channel.send (`Erreur : il y a plus d'arguments que d'objets dans la liste de crafts.`);
+
+        for (i = 0; i < args.length; i++) {
+            var num = parseInt(args[i] - 1, 10);
+            var str = newCraft.list[num];
+            const update = await Craft.findOneAndUpdate({
+                userID: message.author.id,
+                serverID: message.guild.id
+                }, {
+                    $pull: { list: str },
+                    $set: { number: newCraft.number - args.length }
+                })
+        }
+        message.channel.send(`Les données ont bien été mises à jour.`);
+
+        const newOne = await Craft.findOne({
+            userID: message.author.id,
+            serverID: message.guild.id
+        })
+        const newData = await Data.findOne({
+            userID: message.author.id,
+            serverID: message.guild.id
+        })
+
+        if (newOne.number < 1) {
+            const del = await Wishlist.findOneAndDelete({
+                userID: message.author.id,
+                serverID: message.guild.id
+            });
+            return message.reply(`la wishlist est vide. Elle a donc été effacée.`);
+        }
+
+        const list = newOne.list;
+        let newEmbed = new Discord.MessageEmbed()
+            .setColor(`${color}`)
+            .setTitle(`Liste de crafts de ${message.author.username}`)
+        if (newData) newEmbed.setDescription(`Sur ${newData.ile}`);
         for (i = 0; i < newOne.number; i++) {
             newEmbed.addField(`\u200b`, `**${i + 1}.** ${list[i]}`);
         }
