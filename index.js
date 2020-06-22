@@ -7,6 +7,7 @@ const Dodo = require ('./models/dodo');
 const Wlist = require ('./models/wlist');
 const Wishlist = require('./models/wishlist');
 const Craft = require('./models/craft');
+const Users = require ('./models/usersList');
 
 const client = new Discord.Client();
 client.commands = new Discord.Collection();
@@ -52,6 +53,29 @@ client.on('message', async message => {
     else if (message.member.roles.cache.has("710067008011632641")) { var color = '#f894d0'; } // rose
     else if (message.member.roles.cache.has("710067235250634873")) { var color = '#78b1e4'; } // bleu
     else if (message.member.roles.cache.has("710067124886044735")) { var color = '#4db886'; } // vert
+
+    var checkUser = await Users.findOne({
+        userID: message.author.id,
+        serverID: message.guild.id,
+        username: message.member.displayName.toLowerCase()
+    });
+    if (!checkUser) {
+        const del = await Users.findOneAndDelete({
+            userID: message.author.id,
+            serverID: message.guild.id
+        });
+        var checkUser = new Users({
+            _id: mongoose.Types.ObjectId(),
+            userID: message.author.id,
+            serverID: message.guild.id,
+            username: message.member.displayName.toLowerCase(),
+        })
+        await checkUser.save();
+    }
+
+    const usersList = await Users.find({
+        serverID: message.guild.id
+    });
 
     if (answered === false && message.author.id === userCard) {
         number = 4;
@@ -155,8 +179,15 @@ client.on('message', async message => {
         }
         
         else {
-            const taggedUser = message.mentions.users.first() || message.author;
-            if (obj && taggedUser === message.author && message.author != message.mentions.users.first()) return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <@Membre>\` pour afficher le passeport d'un.e autre membre.`);
+            if (args.length > 0) return message.reply(`la commande ${prefix}${commandName} prend zéro ou un argument.\n\`${prefix}${commandName}\` pour afficher son propre passeport.\n\`${prefix}${commandName} <@Membre>\` pour afficher le passeport d'un.e autre membre.`);
+            var taggedUser = message.mentions.users.first() || message.author;
+            if (obj && taggedUser === message.author) {
+                for (i = 0; i < usersList.length; i++) {
+                    var taggedUser = 'undefined';
+                    if (usersList[i].username.includes(`${obj}`)) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
+                }
+            }
+            if (obj && taggedUser === 'undefined') return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <@Membre>\` pour afficher le passeport d'un.e autre membre.`);
             const newData = await Data.findOne({
                 userID: taggedUser.id,
                 serverID: message.guild.id
@@ -218,9 +249,16 @@ client.on('message', async message => {
     }
 
     else if (commandName === 'codeami' || commandName === 'code') {
-        if (args.length > 1) return message.reply(`la commande \`${prefix}${commandName}\` prend zéro ou un argument.\n\`${prefix}${commandName}\` pour afficher son propre code ami.\n\`${prefix}${commandName} <@Membre>\` ou \`${prefix}${commandName} <Page>\` pour afficher le code ami d'un.e autre membre.`);
-        const taggedUser = message.mentions.users.first() || message.author;
+        if (args.length > 0) return message.reply(`la commande \`${prefix}${commandName}\` prend zéro ou un argument.\n\`${prefix}${commandName}\` pour afficher son propre code ami.\n\`${prefix}${commandName} <@Membre>\` ou \`${prefix}${commandName} <Page>\` pour afficher le code ami d'un.e autre membre.`);
         if (!obj || isNaN(parseInt(obj))) {
+            var taggedUser = message.mentions.users.first() || message.author;
+            if (obj && taggedUser === message.author) {
+                for (i = 0; i < usersList.length; i++) {
+                    var taggedUser = 'undefined';
+                    if (usersList[i].username.includes(`${obj}`)) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
+                }
+            }
+        if (obj && taggedUser === 'undefined') return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <@Membre>\` pour afficher le code ami d'un.e autre membre.\n\`${prefix}${commandName} <Page>\` pour afficher une page des codes ami.`);
             if (obj && taggedUser === message.author && message.author != message.mentions.users.first()) return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <@Membre>\` pour afficher le code ami d'un.e autre membre.\n\`${prefix}${commandName} <Page>\` pour afficher une page des codes ami.`);
             const newData = await Data.findOne({
                 userID: taggedUser.id,
@@ -322,8 +360,14 @@ client.on('message', async message => {
 
         else {
             if (args.length > 0) return message.reply(`la commande ${prefix}${commandName} prend entre zéro et un argument.\n\`${prefix}${commandName}\` pour afficher son propre dodocode.\n\`${prefix}${commandName} <@Membre>\` pour afficher le dodocode d'un autre membre.\n\`${prefix}${commandName} all\` pour afficher tous les dodocodes actifs.`);
-            const taggedUser = message.mentions.users.first() || message.author;
-            if (obj && taggedUser === message.author && message.author != message.mentions.users.first()) return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <@Membre>\` pour afficher le dodocode d'un.e autre membre.`);
+            var taggedUser = message.mentions.users.first() || message.author;
+            if (obj && taggedUser === message.author) {
+                for (i = 0; i < usersList.length; i++) {
+                    var taggedUser = 'undefined';
+                    if (usersList[i].username.includes(`${obj}`)) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
+                }
+            }
+            if (obj && taggedUser === 'undefined') return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <@Membre>\` pour afficher le dodocode d'un.e autre membre.`);
             const newDodo = await Dodo.findOne({
                 userID: taggedUser.id,
 			    serverID: message.guild.id
@@ -414,8 +458,14 @@ client.on('message', async message => {
 
         else if (obj === 'next') {
             if (args.length > 1) return message.reply(`la commande \`${prefix}${commandName} ${obj}\` prend 0 ou 1 argument.\n\`${prefix}${commandName} ${obj}\` pour passer à la personne suivante dans sa propre liste d'attente.\n\`${prefix}${commandName} ${obj} <@Membre>\` pour passer à la personne suivante dans la liste d'attente d'un.e autre membre.`);
-            const taggedUser = message.mentions.users.first() || message.author;
-            if (args.length === 1 && taggedUser === message.author && message.author != message.mentions.users.first()) return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} ${obj}\` pour passer à la personne suivante dans sa propre liste d'attente.\n\`${prefix}${commandName} ${obj} <@Membre>\` pour passer à la personne suivante dans la liste d'attente d'un.e autre membre.`);
+            var taggedUser = message.mentions.users.first() || message.author;
+            if (args[0] && taggedUser === message.author) {
+                for (i = 0; i < usersList.length; i++) {
+                    var taggedUser = 'undefined';
+                    if (usersList[i].username.includes(`${args[0].toLowerCase()}`)) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
+                }
+            }
+            if (args[0] && taggedUser === 'undefined') return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <@Membre>\` pour afficher la liste d'attente d'un.e autre membre.`);
             const newWlist = await Wlist.findOne({
                 userID: taggedUser.id,
                 serverID: message.guild.id
@@ -831,13 +881,14 @@ client.on('message', async message => {
 
         else {
             if (args.length > 0) return message.reply(`la commande \`${prefix}${commandName}\` prend zéro ou un argument.\n\`${prefix}${commandName}\` pour afficher sa propre wishlist.\n\`${prefix}${commandName} <@Membre>\` pour afficher la wishlist d'un.e autre membre.`);
-            const check = await Wishlist.findOne({
-                userID: message.author.id,
-                serverID: message.guild.id
-            });
-            if (check) return message.reply(`une wishlist existe déjà.\n\`${prefix}${commandName} reset\` pour effacer ta wishlist.\n\`${prefix}${commandName} add <Objet>,<Objet>\` pour ajouter des objets.\n\`${prefix}${commandName} delete <Numéro> <Numéro>\` pour supprimer des objets.`);
-            const taggedUser = message.mentions.users.first() || message.author;
-            if (obj && taggedUser === message.author && message.author != message.mentions.users.first()) return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <@Membre>\` pour afficher la wishlist d'un.e autre membre.`);
+            var taggedUser = message.mentions.users.first() || message.author;
+            if (obj && taggedUser === message.author) {
+                for (i = 0; i < usersList.length; i++) {
+                    var taggedUser = 'undefined';
+                    if (usersList[i].username.includes(`${obj}`)) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
+                }
+            }
+            if (obj && taggedUser === 'undefined') return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <@Membre>\` pour afficher la wishlist d'un.e autre membre.`);
             const newWishlist = await Wishlist.findOne({
                 userID: taggedUser.id,
                 serverID: message.guild.id
@@ -1040,9 +1091,15 @@ client.on('message', async message => {
 
         else {
             if (args.length > 0) return message.reply(`la commande \`${prefix}${commandName}\` prend zéro ou un argument.\n\`${prefix}${commandName}\` pour afficher sa propre liste de crafts.\n\`${prefix}${commandName} <@Membre>\` pour afficher la liste de crafts d'un.e autre membre.`);
-            const taggedUser = message.mentions.users.first() || message.author;
             if (!obj || isNaN(parseInt(obj))) {
-                if (obj && taggedUser === message.author && message.author != message.mentions.users.first()) return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <@Membre>\` pour afficher la liste de crafts d'un.e autre membre.`);
+                var taggedUser = message.mentions.users.first() || message.author;
+                if (obj && taggedUser === message.author) {
+                    for (i = 0; i < usersList.length; i++) {
+                        var taggedUser = 'undefined';
+                        if (usersList[i].username.includes(`${obj}`)) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
+                    }
+                }
+                if (obj && taggedUser === 'undefined') return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <@Membre>\` pour afficher la liste de crafts d'un.e autre membre.`);
                 const newCraft = await Craft.findOne({
                     userID: taggedUser.id,
                     serverID: message.guild.id
@@ -1081,7 +1138,7 @@ client.on('message', async message => {
                 for (i = 0; i < 10; i++) {
                     if (index < res.length) {
                         let user = client.users.cache.get(res[index].userID);
-                        newEmbed.addField(`ac!craft @${user.username}`, `**${index + 1}.** ${user.username}`)
+                        newEmbed.addField(`ac!craft ${user.username}`, `**${index + 1}.** ${user.username}`)
                         index++;
                     }
                 }
