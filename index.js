@@ -121,6 +121,16 @@ client.on('message', async message => {
     }
 
     if (commandName === 'card') {
+        if (obj === 'help') {
+            let newEmbed = new Discord.MessageEmbed()
+                .setColor(`${color}`)
+                .setTitle(`🎲 ${prefix}${commandName}`)
+                newEmbed.addFields(
+                    { name: `**Lancer un mini jeu :**`, value: `\`${prefix}${commandName}\` et suivre les instructions.`}
+                    )
+                .setFooter('Bot par Marie#1702');
+            return message.channel.send(newEmbed);
+        }
         message.reply('devine quelle carte je tiens dans ma main !\nRéponses possibles : \`carreau\`, \`coeur\`, \`pique\` ou \`trèfle\` !');
         answered = false;
         userCard = message.author.id;
@@ -178,6 +188,21 @@ client.on('message', async message => {
             if (!del) return message.reply('aucun passeport n\'a été trouvé.');
             return message.reply('ton passeport a bien été effacé.');
         }
+
+        else if (obj === 'help') {
+            let newEmbed = new Discord.MessageEmbed()
+                .setColor(`${color}`)
+                .setTitle(`📇 ${prefix}${commandName}`)
+                .setDescription(`*Alias : passeport, passport, id*`);
+                newEmbed.addFields(
+                    { name: `**Créer un passeport :**`, value: `\`${prefix}${commandName} create <Pseudo> <Île> <Fruit> <CodeAmi>\``},
+                    { name: `**Supprimer son passeport :**`, value: `\`${prefix}${commandName} reset\``},
+                    { name: `**Afficher son passeport :**`, value: `\`${prefix}${commandName}\``},
+                    { name: `**Afficher le passeport d'un membre :**`, value: `\`${prefix}${commandName} <Membre>\``},
+                )
+                .setFooter('Bot par Marie#1702');
+            return message.channel.send(newEmbed);
+        }
         
         else {
             if (args.length > 0) return message.reply(`la commande ${prefix}${commandName} prend zéro ou un argument.\n\`${prefix}${commandName}\` pour afficher son propre passeport.\n\`${prefix}${commandName} <Membre>\` pour afficher le passeport d'un.e autre membre.`);
@@ -215,6 +240,7 @@ client.on('message', async message => {
         if (obj === 'create') {
             const list = message.content.slice(prefix.length).split('\"', 2);
             const bio = list[1];
+            if (bio === ' ') return message.reply(`la bio doit contenir au moins un caractère affichable.`);
             if (!bio) return message.reply(`la commande \`${prefix}${commandName} ${obj}\` prend un argument entre guillemets :\n\`${prefix}${commandName} ${obj} \"Ceci est ma biographie\"\``);
             const doc = await Data.findOne({
                 userID: message.author.id,
@@ -240,6 +266,18 @@ client.on('message', async message => {
             return message.reply('ta bio a bien été effacée.');
         }
 
+        else if (obj === 'help') {
+            let newEmbed = new Discord.MessageEmbed()
+                .setColor(`${color}`)
+                .setTitle(`📝 ${prefix}${commandName}`)
+                newEmbed.addFields(
+                    { name: `**Créer une bio sur le passeport :**`, value: `\`${prefix}${commandName} create "Texte"\``},
+                    { name: `**Supprimer sa bio :**`, value: `\`${prefix}${commandName} reset\``}
+                )
+                .setFooter('Bot par Marie#1702');
+            return message.channel.send(newEmbed);
+        }
+
         else if (!obj) {
             return message.reply(`la commande ${prefix}${commandName} prend au moins un argument.\n\`${prefix}${commandName} create "Ceci est une biographie"\` pour ajouter une biographie au passeport.\n\`${prefix}${commandName} reset\` pour supprimer sa biographie du passeport.`);
         }
@@ -250,6 +288,20 @@ client.on('message', async message => {
     }
 
     else if (commandName === 'codeami' || commandName === 'code') {
+        if (obj === 'help') {
+            let newEmbed = new Discord.MessageEmbed()
+                .setColor(`${color}`)
+                .setTitle(`👭 ${prefix}${commandName}`)
+                .setDescription(`*Alias : codeami, code*`);
+                newEmbed.addFields(
+                    { name: `**Afficher son code ami :**`, value: `\`${prefix}${commandName}\``},
+                    { name: `**Afficher le code ami d'un membre :**`, value: `\`${prefix}${commandName} <Membre>\``},
+                    { name: `**Afficher une page de tous les codes ami :**`, value: `\`${prefix}${commandName} <N° de page>\``}
+                )
+                .setFooter('Bot par Marie#1702');
+            return message.channel.send(newEmbed);
+        }
+
         if (args.length > 0) return message.reply(`la commande \`${prefix}${commandName}\` prend zéro ou un argument.\n\`${prefix}${commandName}\` pour afficher son propre code ami.\n\`${prefix}${commandName} <Membre>\` ou \`${prefix}${commandName} <Page>\` pour afficher le code ami d'un.e autre membre.`);
         if (!obj || isNaN(parseInt(obj))) {
             var taggedUser = message.mentions.users.first() || message.author;
@@ -356,6 +408,23 @@ client.on('message', async message => {
                 newEmbed.addField(`${i + 1}. Chez ${user.username}`, `**Dodocode** : ${res[i].dodocode}\n**Raison** : ${res[i].raison}`)
             }
             newEmbed.setFooter('Bot par Marie#1702');
+            return message.channel.send(newEmbed);
+        }
+        
+        else if (obj === 'help') {
+            let newEmbed = new Discord.MessageEmbed()
+                .setColor(`${color}`)
+                .setTitle(`✈️ ${prefix}${commandName}`)
+                .setDescription(`*Alias : dodocode, dcode*`);
+                newEmbed.addFields(
+                    { name: `**Créer un dodocode temporaire :**`, value: `\`${prefix}${commandName} create <Dodocode> "Raison"\``},
+                    { name: `**Supprimer son dodocode :**`, value: `\`${prefix}${commandName} reset\``},
+                    { name: `**Afficher son dodocode :**`, value: `\`${prefix}${commandName}\``},
+                    { name: `**Afficher le dodocode d'un membre :**`, value: `\`${prefix}${commandName} <Membre>\``},
+                    { name: `**Afficher tous les dodocodes actifs :**`, value: `\`${prefix}${commandName} all\``}
+
+                )
+                .setFooter('Bot par Marie#1702');
             return message.channel.send(newEmbed);
         }
 
@@ -693,6 +762,25 @@ client.on('message', async message => {
             return message.channel.send(`${user}, à ton tour !`);
         }
 
+        else if (obj === 'help') {
+            let newEmbed = new Discord.MessageEmbed()
+                .setColor(`${color}`)
+                .setTitle(`🎟️ ${prefix}${commandName}`)
+                .setDescription(`*Alias : waitinglist, wlist*`);
+                newEmbed.addFields(
+                    { name: `**Créer une liste d'attente :**`, value: `\`${prefix}${commandName} create <Membre> <Membre>\``},
+                    { name: `**Supprimer sa liste d'attente :**`, value: `\`${prefix}${commandName} reset\``},
+                    { name: `**Passer à la personne suivante :**`, value: `\`${prefix}${commandName} next\``},
+                    { name: `**Passer à la personne suivante sur la liste d'un autre membre :**`, value: `\`${prefix}${commandName} next <Membre>\``},
+                    { name: `**Ajouter des gens à sa liste :**`, value: `\`${prefix}${commandName} add <Membre> <Membre>\``},
+                    { name: `**Supprimer des gens de sa liste :**`, value: `\`${prefix}${commandName} delete <Membre> <Membre>\``},
+                    { name: `**Afficher sa liste d'attente :**`, value: `\`${prefix}${commandName}\``},
+                    { name: `**Afficher la liste d'attente d'un membre :**`, value: `\`${prefix}${commandName} <Membre>\``}
+                    )
+                .setFooter('Bot par Marie#1702');
+            return message.channel.send(newEmbed);
+        }
+
         else {
             if (args.length > 0) return message.reply(`la commande \`${prefix}${commandName}\` prend zéro ou un argument.\n\`${prefix}${commandName}\` pour afficher sa propre liste d'attente.\n\`${prefix}${commandName} <Membre>\` pour afficher la liste d'attente d'un.e autre membre.`);
             var taggedUser = message.mentions.users.first() || message.author;
@@ -908,6 +996,22 @@ client.on('message', async message => {
             return message.channel.send(`Les données ont bien été mises à jour.\nCes objets ont été supprimés de la wishlist : \`${res}\`\nTa wishlist contient ${newOne.number} ${object}.\n\`${prefix}${commandName}\` pour voir ta wishlist.`);
         }
 
+        else if (obj === 'help') {
+            let newEmbed = new Discord.MessageEmbed()
+                .setColor(`${color}`)
+                .setTitle(`💸 ${prefix}${commandName}`)
+                newEmbed.addFields(
+                    { name: `**Créer une wishlist :**`, value: `\`${prefix}${commandName} create Objet,Objet\``},
+                    { name: `**Supprimer sa wishlist :**`, value: `\`${prefix}${commandName} reset\``},
+                    { name: `**Ajouter des objets à sa wishlist :**`, value: `\`${prefix}${commandName} add Objet,Objet\``},
+                    { name: `**Supprimer des objets de sa wishlist :**`, value: `\`${prefix}${commandName} delete <Numéro de l'objet>,<Numéro de l'objet>\``},
+                    { name: `**Afficher sa wishlist :**`, value: `\`${prefix}${commandName}\``},
+                    { name: `**Afficher la wishlist d'un membre :**`, value: `\`${prefix}${commandName} <Membre>\``}
+                    )
+                .setFooter('Bot par Marie#1702');
+            return message.channel.send(newEmbed);
+        }
+
         else {
             if (args.length > 0) return message.reply(`la commande \`${prefix}${commandName}\` prend zéro ou un argument.\n\`${prefix}${commandName}\` pour afficher sa propre wishlist.\n\`${prefix}${commandName} <Membre>\` pour afficher la wishlist d'un.e autre membre.`);
             var taggedUser = message.mentions.users.first() || message.author;
@@ -1120,6 +1224,23 @@ client.on('message', async message => {
             return message.channel.send(`Les données ont bien été mises à jour.\nCes crafts ont été supprimés de la liste : \`${res}\`\nTa liste contient ${newOne.number} ${object}.\n\`${prefix}${commandName}\` pour voir ta liste de crafts.`);
         }
 
+        else if (obj === 'help') {
+            let newEmbed = new Discord.MessageEmbed()
+                .setColor(`${color}`)
+                .setTitle(`🔨 ${prefix}${commandName}`)
+                newEmbed.addFields(
+                    { name: `**Créer une liste de crafts :**`, value: `\`${prefix}${commandName} create Objet,Objet\``},
+                    { name: `**Supprimer sa liste de crafts :**`, value: `\`${prefix}${commandName} reset\``},
+                    { name: `**Ajouter des objets à sa liste de crafts :**`, value: `\`${prefix}${commandName} add Objet,Objet\``},
+                    { name: `**Supprimer des objets de sa liste de crafts :**`, value: `\`${prefix}${commandName} delete <Numéro de l'objet>,<Numéro de l'objet>\``},
+                    { name: `**Afficher sa liste de crafts :**`, value: `\`${prefix}${commandName}\``},
+                    { name: `**Afficher la liste de crafts d'un membre :**`, value: `\`${prefix}${commandName} <Membre>\``},
+                    { name: `**Afficher la page précisée de tous les gens ayant une liste de crafts :**`, value: `\`${prefix}${commandName} <Page>\``}
+                    )
+                .setFooter('Bot par Marie#1702');
+            return message.channel.send(newEmbed);
+        }
+
         else {
             if (args.length > 0) return message.reply(`la commande \`${prefix}${commandName}\` prend zéro ou un argument.\n\`${prefix}${commandName}\` pour afficher sa propre liste de crafts.\n\`${prefix}${commandName} <Membre>\` pour afficher la liste de crafts d'un.e autre membre.`);
             if (!obj || isNaN(parseInt(obj))) {
@@ -1130,7 +1251,7 @@ client.on('message', async message => {
                         if (usersList[i].username.includes(`${obj}`)) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
                     }
                 }
-                if (obj && taggedUser === 'undefined') return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <Membre>\` pour afficher la liste de crafts d'un.e autre membre.`);
+                if (obj && taggedUser === 'undefined') return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <Membre>\` pour afficher la liste de crafts d'un.e autre membre.\n\`${prefix}${commandName} <Page>\` pour afficher la liste de tous les gens ayant une liste de crafts.`);
                 const newCraft = await Craft.findOne({
                     userID: taggedUser.id,
                     serverID: message.guild.id
@@ -1178,4 +1299,26 @@ client.on('message', async message => {
             }
         }
     }
+
+    else if (commandName === 'help') {
+        let newEmbed = new Discord.MessageEmbed()
+            .setColor(`${color}`)
+            .setTitle(`Liste des commandes`)
+            .setDescription(`\`${prefix}commande ${commandName}\` pour plus d'informations sur chaque commande.`);
+            newEmbed.addFields(
+                { name: `Exemple : \`${prefix}passeport ${commandName}\``, value: `\u200b` },
+                { name: '📇 Passeport', value: `\`create\` \`reset\` \`help\``, inline: true },
+                { name: '📝 Bio', value: `\`create\` \`reset\` \`help\``, inline: true },
+                { name: '👭 Codeami', value: `\`<n° de page>\` \`help\``, inline: true },
+                { name: `\u200b`, value: `\u200b` },
+                { name: '✈️ Dodocode', value: `\`create\` \`reset\` \`all\` \`<n° de page>\` \`help\``, inline: true },
+                { name: '🎟️ Waitinglist', value: `\`create\` \`reset\` \`next\` \`add\` \`delete\` \`help\``, inline: true },
+                { name: '💸 Wishlist', value: `\`create\` \`reset\` \`add\` \`delete\` \`help\``, inline: true },
+                { name: `\u200b`, value: `\u200b` },
+                { name: '🔨 Craft', value: `\`create\` \`reset\` \`add\` \`delete\` \`n° de page\` \`help\``, inline: true },
+                { name: '🎲 Card', value: `\`help\``, inline: true },
+                { name: `\u200b`, value: `\u200b`, inline: true })
+            newEmbed.setFooter(`Bot par Marie#1702`);
+            return message.channel.send(newEmbed);
+        }
 });
