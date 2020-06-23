@@ -172,7 +172,7 @@ client.on('message', async message => {
                     console.log(err);
                     return message.reply('les données n\'ont pas pu être mises à jour.');
                 }),
-                message.reply(`les données ont bien été mises à jour.\n\`${prefix}${commandName}\` pour voir ton passeport.\n\`${prefix}bio "Texte"\` pour ajouter une biographie à ton passeport.`);
+                message.reply(`les données ont bien été mises à jour.\n\`${prefix}${commandName}\` pour voir ton passeport.\n\`${prefix}bio create "Texte"\` pour ajouter une biographie à ton passeport.`);
             }
 
             else if (args.length != 4) {
