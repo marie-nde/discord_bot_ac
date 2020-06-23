@@ -75,7 +75,7 @@ client.on('message', async message => {
 
     const usersList = await Users.find({
         serverID: message.guild.id
-    });
+    }).sort();
 
     if (answered === false && message.author.id === userCard) {
         number = 4;
@@ -117,6 +117,7 @@ client.on('message', async message => {
             }
             return (mention);
         }
+        return;
     }
 
     if (commandName === 'card') {
@@ -179,7 +180,7 @@ client.on('message', async message => {
         }
         
         else {
-            if (args.length > 0) return message.reply(`la commande ${prefix}${commandName} prend zéro ou un argument.\n\`${prefix}${commandName}\` pour afficher son propre passeport.\n\`${prefix}${commandName} <@Membre>\` pour afficher le passeport d'un.e autre membre.`);
+            if (args.length > 0) return message.reply(`la commande ${prefix}${commandName} prend zéro ou un argument.\n\`${prefix}${commandName}\` pour afficher son propre passeport.\n\`${prefix}${commandName} <Membre>\` pour afficher le passeport d'un.e autre membre.`);
             var taggedUser = message.mentions.users.first() || message.author;
             if (obj && taggedUser === message.author) {
                 for (i = 0; i < usersList.length; i++) {
@@ -187,7 +188,7 @@ client.on('message', async message => {
                     if (usersList[i].username.includes(`${obj}`)) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
                 }
             }
-            if (obj && taggedUser === 'undefined') return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <@Membre>\` pour afficher le passeport d'un.e autre membre.`);
+            if (obj && taggedUser === 'undefined') return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <Membre>\` pour afficher le passeport d'un.e autre membre.`);
             const newData = await Data.findOne({
                 userID: taggedUser.id,
                 serverID: message.guild.id
@@ -249,7 +250,7 @@ client.on('message', async message => {
     }
 
     else if (commandName === 'codeami' || commandName === 'code') {
-        if (args.length > 0) return message.reply(`la commande \`${prefix}${commandName}\` prend zéro ou un argument.\n\`${prefix}${commandName}\` pour afficher son propre code ami.\n\`${prefix}${commandName} <@Membre>\` ou \`${prefix}${commandName} <Page>\` pour afficher le code ami d'un.e autre membre.`);
+        if (args.length > 0) return message.reply(`la commande \`${prefix}${commandName}\` prend zéro ou un argument.\n\`${prefix}${commandName}\` pour afficher son propre code ami.\n\`${prefix}${commandName} <Membre>\` ou \`${prefix}${commandName} <Page>\` pour afficher le code ami d'un.e autre membre.`);
         if (!obj || isNaN(parseInt(obj))) {
             var taggedUser = message.mentions.users.first() || message.author;
             if (obj && taggedUser === message.author) {
@@ -258,8 +259,8 @@ client.on('message', async message => {
                     if (usersList[i].username.includes(`${obj}`)) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
                 }
             }
-        if (obj && taggedUser === 'undefined') return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <@Membre>\` pour afficher le code ami d'un.e autre membre.\n\`${prefix}${commandName} <Page>\` pour afficher une page des codes ami.`);
-            if (obj && taggedUser === message.author && message.author != message.mentions.users.first()) return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <@Membre>\` pour afficher le code ami d'un.e autre membre.\n\`${prefix}${commandName} <Page>\` pour afficher une page des codes ami.`);
+        if (obj && taggedUser === 'undefined') return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <Membre>\` pour afficher le code ami d'un.e autre membre.\n\`${prefix}${commandName} <Page>\` pour afficher une page des codes ami.`);
+            if (obj && taggedUser === message.author && message.author != message.mentions.users.first()) return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <Membre>\` pour afficher le code ami d'un.e autre membre.\n\`${prefix}${commandName} <Page>\` pour afficher une page des codes ami.`);
             const newData = await Data.findOne({
                 userID: taggedUser.id,
                 serverID: message.guild.id
@@ -359,7 +360,7 @@ client.on('message', async message => {
         }
 
         else {
-            if (args.length > 0) return message.reply(`la commande ${prefix}${commandName} prend entre zéro et un argument.\n\`${prefix}${commandName}\` pour afficher son propre dodocode.\n\`${prefix}${commandName} <@Membre>\` pour afficher le dodocode d'un autre membre.\n\`${prefix}${commandName} all\` pour afficher tous les dodocodes actifs.`);
+            if (args.length > 0) return message.reply(`la commande ${prefix}${commandName} prend entre zéro et un argument.\n\`${prefix}${commandName}\` pour afficher son propre dodocode.\n\`${prefix}${commandName} <Membre>\` pour afficher le dodocode d'un autre membre.\n\`${prefix}${commandName} all\` pour afficher tous les dodocodes actifs.`);
             var taggedUser = message.mentions.users.first() || message.author;
             if (obj && taggedUser === message.author) {
                 for (i = 0; i < usersList.length; i++) {
@@ -367,7 +368,7 @@ client.on('message', async message => {
                     if (usersList[i].username.includes(`${obj}`)) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
                 }
             }
-            if (obj && taggedUser === 'undefined') return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <@Membre>\` pour afficher le dodocode d'un.e autre membre.`);
+            if (obj && taggedUser === 'undefined') return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <Membre>\` pour afficher le dodocode d'un.e autre membre.`);
             const newDodo = await Dodo.findOne({
                 userID: taggedUser.id,
 			    serverID: message.guild.id
@@ -387,11 +388,19 @@ client.on('message', async message => {
 
     else if (commandName === 'waitinglist' || commandName === 'wlist') {
         if (obj === 'create') {
-            if (args.length === 0) return message.reply(`la commande \`${prefix}${commandName} ${obj}\` prend au moins un argument :\n\`${prefix}${commandName} ${obj} <@Membre> <@Membre>\``)
+            if (args.length === 0) return message.reply(`la commande \`${prefix}${commandName} ${obj}\` prend au moins un argument :\n\`${prefix}${commandName} ${obj} <Membre> <Membre>\``)
+            for (i = 0; i < args.length; i++) {
+                if (getUserFromMention(args[i])) args[i] = getUserFromMention(args[i]);
+                else {
+                    for (j = 0; j < usersList.length; j++) {
+                        if (usersList[j].username.includes(`${args[i].toLowerCase()}`)) { args[i] = (usersList[j].userID); break; }
+                    }
+                }
+            }
             var j = 0;
             var i = 1;
             while (j < args.length - 1) {
-                i = j + 1;
+                var i = j + 1;
                 while (i < args.length) {
                     if (args[j] === args[i]) return message.reply(`la commande \`${prefix}${commandName} ${obj}\` ne peut pas contenir deux fois le même argument.`);
                     else i++;
@@ -400,10 +409,9 @@ client.on('message', async message => {
             }
             var number = 0;
             for (i = 0; i < args.length; i++) {
-                    if (!getUserFromMention(args[i])) break;
-                    number++;
-                }
-            if (number === 0) return message.reply(`utilisateur introuvable.\n\`${prefix}${commandName} ${obj} <@Membre> <@Membre>\` pour créer une liste d'attente.`);
+                if (!client.users.cache.get(args[i])) return message.reply(`utilisateur introuvable.\n\`${prefix}${commandName} ${obj} <Membre> <Membre>\` pour créer une liste d'attente.`);
+                number++;
+            }
             const del = await Wlist.findOneAndDelete({
                 userID: message.author.id,
                 serverID: message.guild.id
@@ -418,15 +426,15 @@ client.on('message', async message => {
                 console.log(err);
                 return message.reply('les données n\'ont pas pu être mises à jour.');
             }),
-            message.reply(`les données ont bien été mises à jour.\n\`${prefix}${commandName}\` pour voir ta liste d'attente.\n\`${prefix}${commandName} reset\` pour supprimer ta liste d'attente.\n\`${prefix}${commandName} next\` pour passer à la personne suivante.\n\`${prefix}${commandName} add <@Membre> <@Membre>\` pour ajouter des membres à ta liste d'attente.\n\`${prefix}${commandName} delete <@Membre> <@Membre>\` pour supprimer des membres de ta liste d'attente.`);
+            message.reply(`les données ont bien été mises à jour.\n\`${prefix}${commandName}\` pour voir ta liste d'attente.\n\`${prefix}${commandName} reset\` pour supprimer ta liste d'attente.\n\`${prefix}${commandName} next\` pour passer à la personne suivante.\n\`${prefix}${commandName} add <Membre> <Membre>\` pour ajouter des membres à ta liste d'attente.\n\`${prefix}${commandName} delete <Membre> <Membre>\` pour supprimer des membres de ta liste d'attente.`);
             for (i = 0; i < number; i++) {
-                const user = client.users.cache.get(getUserFromMention(args[i]));
+                const user = client.users.cache.get(args[i]);
                 if (!user) break;
                 const update = await Wlist.findOneAndUpdate({
                     userID: message.author.id,
                     serverID: message.guild.id
                 }, {
-                    $push: { users: getUserFromMention(args[i]) }
+                    $push: { users: args[i] }
                 });
             }
             const newDodo = await Dodo.findOne({
@@ -437,14 +445,15 @@ client.on('message', async message => {
                 .setColor(`${color}`)
                 .setTitle(`Liste d'attente de ${message.author.username}`)
             if (newDodo) newEmbed.setDescription(`${newDodo.dodocode}`)
-            for (i = 0; i < args.length; i++) {
-                const user = client.users.cache.get(getUserFromMention(args[i]));
+            for (i = 0; i < number; i++) {
+                const user = client.users.cache.get(args[i]);
                 if (!user) break;
                 newEmbed.addField(`ac!${commandName} next`, `**${i + 1}.** ${user.username}`);
             }
             newEmbed.setFooter('Bot par Marie#1702');
             message.channel.send(newEmbed);
-            return message.channel.send(`${args[0]}, à ton tour !`);
+            const ret = client.users.cache.get(args[0]);
+            return message.channel.send(`${ret}, à ton tour !`);
         }
 
         else if (obj === 'reset') {
@@ -457,7 +466,7 @@ client.on('message', async message => {
         }
 
         else if (obj === 'next') {
-            if (args.length > 1) return message.reply(`la commande \`${prefix}${commandName} ${obj}\` prend 0 ou 1 argument.\n\`${prefix}${commandName} ${obj}\` pour passer à la personne suivante dans sa propre liste d'attente.\n\`${prefix}${commandName} ${obj} <@Membre>\` pour passer à la personne suivante dans la liste d'attente d'un.e autre membre.`);
+            if (args.length > 1) return message.reply(`la commande \`${prefix}${commandName} ${obj}\` prend 0 ou 1 argument.\n\`${prefix}${commandName} ${obj}\` pour passer à la personne suivante dans sa propre liste d'attente.\n\`${prefix}${commandName} ${obj} <Membre>\` pour passer à la personne suivante dans la liste d'attente d'un.e autre membre.`);
             var taggedUser = message.mentions.users.first() || message.author;
             if (args[0] && taggedUser === message.author) {
                 for (i = 0; i < usersList.length; i++) {
@@ -465,12 +474,12 @@ client.on('message', async message => {
                     if (usersList[i].username.includes(`${args[0].toLowerCase()}`)) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
                 }
             }
-            if (args[0] && taggedUser === 'undefined') return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <@Membre>\` pour afficher la liste d'attente d'un.e autre membre.`);
+            if (args[0] && taggedUser === 'undefined') return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <Membre>\` pour afficher la liste d'attente d'un.e autre membre.`);
             const newWlist = await Wlist.findOne({
                 userID: taggedUser.id,
                 serverID: message.guild.id
             });
-            if (!newWlist && taggedUser === message.author) return message.reply(`aucune donnée n\'a été trouvée.\n\`${prefix}${commandName} create <@Membre> <@Membre>\` pour créer une liste d'attente.`);
+            if (!newWlist && taggedUser === message.author) return message.reply(`aucune donnée n\'a été trouvée.\n\`${prefix}${commandName} create <Membre> <Membre>\` pour créer une liste d'attente.`);
             if (!newWlist && taggedUser != message.author) return message.reply(`aucune donnée n'a été trouvée pour cet utilisateur.`);
             const modif = await Wlist.findOneAndUpdate({
                 userID: taggedUser.id,
@@ -520,11 +529,24 @@ client.on('message', async message => {
         }
 
         else if (obj === 'add') {
-            if (args.length === 0) return message.reply(`la commande \`${prefix}${commandName} ${obj}\` prend au moins un argument.\n\`${prefix}${commandName} ${obj} <@Membre> <@Membre>\` pour ajouter des membres à sa liste d'attente.`);
+            if (args.length === 0) return message.reply(`la commande \`${prefix}${commandName} ${obj}\` prend au moins un argument.\n\`${prefix}${commandName} ${obj} <Membre> <Membre>\` pour ajouter des membres à sa liste d'attente.`);
+            const newWlist = await Wlist.findOne({
+                userID: message.author.id,
+                serverID: message.guild.id
+            })
+            if (!newWlist) return message.reply(`aucune donnée n'a été trouvée.\n\`${prefix}${commandName} create <Membre> <Membre>\` pour créer une liste d'attente.`);
+            for (i = 0; i < args.length; i++) {
+                if (getUserFromMention(args[i])) args[i] = getUserFromMention(args[i]);
+                else {
+                    for (j = 0; j < usersList.length; j++) {
+                        if (usersList[j].username.includes(`${args[i].toLowerCase()}`)) { args[i] = (usersList[j].userID); break; }
+                    }
+                }
+            }
             var j = 0;
             var i = 1;
             while (j < args.length - 1) {
-                i = j + 1;
+                var i = j + 1;
                 while (i < args.length) {
                     if (args[j] === args[i]) return message.reply(`la commande \`${prefix}${commandName} ${obj}\` ne peut pas contenir deux fois le même argument.`);
                     else i++;
@@ -533,22 +555,16 @@ client.on('message', async message => {
             }
             var number = 0;
             for (i = 0; i < args.length; i++) {
-                if (!getUserFromMention(args[i])) break;
+                if (!client.users.cache.get(args[i])) return message.reply(`utilisateur introuvable.\n\`${prefix}${commandName} ${obj} <Membre> <Membre>\` pour ajouter des membres à sa liste d'attente.`);
                 number++;
             }
-            if (number === 0) return message.reply(`utilisateur introuvable.\n\`${prefix}${commandName} ${obj} <@Membre> <@Membre>\` pour ajouter des membres à sa liste d'attente.`);
-            const newWlist = await Wlist.findOne({
-                userID: message.author.id,
-                serverID: message.guild.id
-            })
-            if (!newWlist) return message.reply(`aucune donnée n'a été trouvée.\n\`${prefix}${commandName} create <@Membre> <@Membre>\` pour créer une liste d'attente.`);
             const check = newWlist.users;
             var i = 0;
             var j = 0;
             while (i < args.length) {
                 j = 0;
                 while (j < check.length) {
-                    if (getUserFromMention(args[i]) === check[j]) return message.reply(`impossible d'ajouter des membres qui sont déjà dans la liste d'attente.`);
+                    if (args[i] === check[j]) return message.reply(`impossible d'ajouter des membres qui sont déjà dans la liste d'attente.`);
                     else j++;
                 }
                 i++;
@@ -558,7 +574,7 @@ client.on('message', async message => {
                     userID: message.author.id,
                     serverID: message.guild.id
                     }, {
-                        $push: { users: getUserFromMention(args[i]) },
+                        $push: { users: args[i] },
                         $set: { number: newWlist.number + number }
                     })
             }
@@ -586,11 +602,24 @@ client.on('message', async message => {
         }
 
         else if (obj === 'delete' || obj === 'del') {
-            if (args.length === 0) return message.reply(`la commande \`${prefix}${commandName} ${obj}\` prend au moins un argument.\n\`${prefix}${commandName} ${obj} <@Membre> <@Membre>\` pour supprimer des membres de sa liste d'attente.`);
+            if (args.length === 0) return message.reply(`la commande \`${prefix}${commandName} ${obj}\` prend au moins un argument.\n\`${prefix}${commandName} ${obj} <Membre> <Membre>\` pour supprimer des membres de sa liste d'attente.`);
+            const newWlist = await Wlist.findOne({
+                userID: message.author.id,
+                serverID: message.guild.id
+            })
+            if (!newWlist) return message.reply(`aucune donnée n'a été trouvée.\n\`${prefix}${commandName} create <Membre> <Membre>\` pour créer une liste d'attente.`);
+            for (i = 0; i < args.length; i++) {
+                if (getUserFromMention(args[i])) args[i] = getUserFromMention(args[i]);
+                else {
+                    for (j = 0; j < usersList.length; j++) {
+                        if (usersList[j].username.includes(`${args[i].toLowerCase()}`)) { args[i] = (usersList[j].userID); break; }
+                    }
+                }
+            }
             var j = 0;
             var i = 1;
             while (j < args.length - 1) {
-                i = j + 1;
+                var i = j + 1;
                 while (i < args.length) {
                     if (args[j] === args[i]) return message.reply(`la commande \`${prefix}${commandName} ${obj}\` ne peut pas contenir deux fois le même argument.`);
                     else i++;
@@ -599,15 +628,9 @@ client.on('message', async message => {
             }
             var number = 0;
             for (i = 0; i < args.length; i++) {
-                if (!getUserFromMention(args[i])) break;
+                if (!client.users.cache.get(args[i])) return message.reply(`utilisateur introuvable.\n\`${prefix}${commandName} ${obj} <Membre> <Membre>\` pour supprimer des membres de sa liste d'attente.`);
                 number++;
             }
-            if (number === 0) return message.reply(`utilisateur introuvable.\n\`${prefix}${commandName} ${obj} <@Membre> <@Membre>\` pour supprimer des membres de sa liste d'attente.`);
-            const newWlist = await Wlist.findOne({
-                userID: message.author.id,
-                serverID: message.guild.id
-            })
-            if (!newWlist) return message.reply(`aucune donnée n'a été trouvée.\n\`${prefix}${commandName} create <@Membre> <@Membre>\` pour créer une liste d'attente.`);
             var i = 0;
             var j = 0;
             var temp = 0;
@@ -615,7 +638,7 @@ client.on('message', async message => {
                 j = 0;
                 temp = 0;
                 while (j < newWlist.users.length) {
-                    if (getUserFromMention(args[i]) === newWlist.users[j]) temp++;
+                    if (args[i] === newWlist.users[j]) temp++;
                     j++;
                 }
                 if (temp === 0) return message.reply(`impossible de retirer des membres qui ne sont pas dans la liste d'attente.`);
@@ -626,7 +649,7 @@ client.on('message', async message => {
                     userID: message.author.id,
                     serverID: message.guild.id
                     }, {
-                        $pull: { users: getUserFromMention(args[i]) },
+                        $pull: { users: args[i] },
                         $set: { number: newWlist.number - number }
                     })
             }
@@ -671,14 +694,20 @@ client.on('message', async message => {
         }
 
         else {
-            if (args.length > 0) return message.reply(`la commande \`${prefix}${commandName}\` prend zéro ou un argument.\n\`${prefix}${commandName}\` pour afficher sa propre liste d'attente.\n\`${prefix}${commandName} <@Membre>\` pour afficher la liste d'attente d'un.e autre membre.`);
-            const taggedUser = message.mentions.users.first() || message.author;
-            if (obj && taggedUser === message.author && message.author != message.mentions.users.first()) return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <@Membre>\` pour afficher la liste d'attente d'un.e autre membre.`);
+            if (args.length > 0) return message.reply(`la commande \`${prefix}${commandName}\` prend zéro ou un argument.\n\`${prefix}${commandName}\` pour afficher sa propre liste d'attente.\n\`${prefix}${commandName} <Membre>\` pour afficher la liste d'attente d'un.e autre membre.`);
+            var taggedUser = message.mentions.users.first() || message.author;
+            if (obj && taggedUser === message.author) {
+                for (i = 0; i < usersList.length; i++) {
+                    var taggedUser = 'undefined';
+                    if (usersList[i].username.includes(`${obj}`)) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
+                }
+            }
+            if (obj && taggedUser === 'undefined') return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <Membre>\` pour afficher la liste d'attente d'un.e autre membre.`);
             const newWlist = await Wlist.findOne({
                 userID: taggedUser.id,
 			    serverID: message.guild.id
             });
-            if (!newWlist && taggedUser === message.author) return message.reply(`aucune donnée n\'a été trouvée.\n\`${prefix}${commandName} create <@Membre> <@Membre> <@Membre>\` pour créer une liste d'attente.`);
+            if (!newWlist && taggedUser === message.author) return message.reply(`aucune donnée n\'a été trouvée.\n\`${prefix}${commandName} create <Membre> <Membre> <Membre>\` pour créer une liste d'attente.`);
             if (!newWlist && taggedUser != message.author) return message.reply(`aucune donnée n'a été trouvée pour cet utilisateur.`);
             const newDodo = await Dodo.findOne({
                 userID: taggedUser.id,
@@ -714,7 +743,7 @@ client.on('message', async message => {
             var j = 0;
             var i = 1;
             while (j < wish.length - 1) {
-                i = j + 1;
+                var i = j + 1;
                 while (i < wish.length) {
                     if (wish[j] === wish[i]) return message.reply(`la commande \`${prefix}${commandName} ${obj}\` ne peut pas contenir deux fois le même argument.`);
                     else i++;
@@ -779,7 +808,7 @@ client.on('message', async message => {
             var j = 0;
             var i = 1;
             while (j < wish.length - 1) {
-                i = j + 1;
+                var i = j + 1;
                 while (i < wish.length) {
                     if (wish[j] === wish[i]) return message.reply(`la commande \`${prefix}${commandName} ${obj}\` ne peut pas contenir deux fois le même argument.`);
                     else i++;
@@ -832,7 +861,7 @@ client.on('message', async message => {
             var j = 0;
             var i = 1;
             while (j < args.length) {
-                i = j + 1;
+                var i = j + 1;
                 while (i < args.length) {
                     if (args[j] === args[i]) return message.reply(`la commande \`${prefix}${commandName} ${obj}\` ne peut pas contenir deux fois le même argument.`);
                     else i++;
@@ -880,7 +909,7 @@ client.on('message', async message => {
         }
 
         else {
-            if (args.length > 0) return message.reply(`la commande \`${prefix}${commandName}\` prend zéro ou un argument.\n\`${prefix}${commandName}\` pour afficher sa propre wishlist.\n\`${prefix}${commandName} <@Membre>\` pour afficher la wishlist d'un.e autre membre.`);
+            if (args.length > 0) return message.reply(`la commande \`${prefix}${commandName}\` prend zéro ou un argument.\n\`${prefix}${commandName}\` pour afficher sa propre wishlist.\n\`${prefix}${commandName} <Membre>\` pour afficher la wishlist d'un.e autre membre.`);
             var taggedUser = message.mentions.users.first() || message.author;
             if (obj && taggedUser === message.author) {
                 for (i = 0; i < usersList.length; i++) {
@@ -888,7 +917,7 @@ client.on('message', async message => {
                     if (usersList[i].username.includes(`${obj}`)) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
                 }
             }
-            if (obj && taggedUser === 'undefined') return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <@Membre>\` pour afficher la wishlist d'un.e autre membre.`);
+            if (obj && taggedUser === 'undefined') return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <Membre>\` pour afficher la wishlist d'un.e autre membre.`);
             const newWishlist = await Wishlist.findOne({
                 userID: taggedUser.id,
                 serverID: message.guild.id
@@ -919,8 +948,10 @@ client.on('message', async message => {
             parse.splice(0, 2);
             const str = parse.join(' ');
             const wish = str.split(',');
+            var j = 0;
+            var i = 1;
             while (j < wish.length - 1) {
-                i = j + 1;
+                var i = j + 1;
                 while (i < wish.length) {
                     if (wish[j] === wish[i]) return message.reply(`la commande \`${prefix}${commandName} ${obj}\` ne peut pas contenir deux fois le même argument.`);
                     else i++;
@@ -989,7 +1020,7 @@ client.on('message', async message => {
             var j = 0;
             var i = 1;
             while (j < wish.length - 1) {
-                i = j + 1;
+                var i = j + 1;
                 while (i < wish.length) {
                     if (wish[j] === wish[i]) return message.reply(`la commande \`${prefix}${commandName} ${obj}\` ne peut pas contenir deux fois le même argument.`);
                     else i++;
@@ -1042,7 +1073,7 @@ client.on('message', async message => {
             var j = 0;
             var i = 1;
             while (j < args.length) {
-                i = j + 1;
+                var i = j + 1;
                 while (i < args.length) {
                     if (args[j] === args[i]) return message.reply(`la commande \`${prefix}${commandName} ${obj}\` ne peut pas contenir deux fois le même argument.`);
                     else i++;
@@ -1051,7 +1082,7 @@ client.on('message', async message => {
             }
             for (i = 0; i < args.length; i++) {
                 if (isNaN(parseInt(args[i], 10))) return message.reply(`tous les arguments doivent être des numéros correspondant à la place du craft dans la liste.`);
-                if (parseInt(args[i], 10) > newCraft.number) return message.reply(`impossible de supprimer des objets qui n'existent pas dans la liste de crafts.`);
+                if (parseInt(args[i], 10) > newCraft.number || parseInt(args[i], 10) < 1) return message.reply(`impossible de supprimer des objets qui n'existent pas dans la liste de crafts.`);
             }
             if (args.length > newCraft.number) return message.reply(`il y a plus d'arguments que de crafts dans la liste.`);
             var res = new Array();
@@ -1090,7 +1121,7 @@ client.on('message', async message => {
         }
 
         else {
-            if (args.length > 0) return message.reply(`la commande \`${prefix}${commandName}\` prend zéro ou un argument.\n\`${prefix}${commandName}\` pour afficher sa propre liste de crafts.\n\`${prefix}${commandName} <@Membre>\` pour afficher la liste de crafts d'un.e autre membre.`);
+            if (args.length > 0) return message.reply(`la commande \`${prefix}${commandName}\` prend zéro ou un argument.\n\`${prefix}${commandName}\` pour afficher sa propre liste de crafts.\n\`${prefix}${commandName} <Membre>\` pour afficher la liste de crafts d'un.e autre membre.`);
             if (!obj || isNaN(parseInt(obj))) {
                 var taggedUser = message.mentions.users.first() || message.author;
                 if (obj && taggedUser === message.author) {
@@ -1099,7 +1130,7 @@ client.on('message', async message => {
                         if (usersList[i].username.includes(`${obj}`)) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
                     }
                 }
-                if (obj && taggedUser === 'undefined') return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <@Membre>\` pour afficher la liste de crafts d'un.e autre membre.`);
+                if (obj && taggedUser === 'undefined') return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <Membre>\` pour afficher la liste de crafts d'un.e autre membre.`);
                 const newCraft = await Craft.findOne({
                     userID: taggedUser.id,
                     serverID: message.guild.id
