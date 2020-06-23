@@ -455,7 +455,7 @@ client.on('message', async message => {
         }
     }
 
-    else if (commandName === 'waitinglist' || commandName === 'wlist') {
+    else if (commandName === 'waitinglist' || commandName === 'waitlist') {
         if (obj === 'create') {
             if (args.length === 0) return message.reply(`la commande \`${prefix}${commandName} ${obj}\` prend au moins un argument :\n\`${prefix}${commandName} ${obj} <Membre> <Membre>\``)
             for (i = 0; i < args.length; i++) {
@@ -766,7 +766,7 @@ client.on('message', async message => {
             let newEmbed = new Discord.MessageEmbed()
                 .setColor(`${color}`)
                 .setTitle(`🎟️ ${prefix}${commandName}`)
-                .setDescription(`*Alias : waitinglist, wlist*`);
+                .setDescription(`*Alias : waitinglist, waitlist*`);
                 newEmbed.addFields(
                     { name: `**Créer une liste d'attente :**`, value: `\`${prefix}${commandName} create <Membre> <Membre>\``},
                     { name: `**Supprimer sa liste d'attente :**`, value: `\`${prefix}${commandName} reset\``},
