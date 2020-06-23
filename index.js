@@ -22,14 +22,6 @@ mongoose.connect('mongodb://localhost:27017/data', {
     });
 mongoose.Promise = global.Promise;
 
-const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
-
-for (const file of commandFiles) {
-	const command = require(`./commands/${file}`);
-	client.commands.set(command.name, command);
-}
-const cooldowns = new Discord.Collection();
-
 client.login(token);
 client.on("ready", () => {
     console.log("Le bot est connecté");

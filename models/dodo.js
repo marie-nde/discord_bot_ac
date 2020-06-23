@@ -1,8 +1,5 @@
 const mongoose = require('mongoose');
 
-var dt = new Date();
-dt.setHours( dt.getHours() + 2 );
-
 const dodoSchema = mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId,
     userID: {

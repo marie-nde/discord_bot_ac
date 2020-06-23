@@ -28,7 +28,7 @@ const dataSchema = mongoose.Schema({
     },
     bio: {
         type: String,
-        default: 'Pas de bio, pour la modifier : \`ac!bio \"Exemple\"\`'
+        default: 'Pas de bio, pour la modifier : \`ac!bio create \"Exemple\"\`'
     },
 })
 
