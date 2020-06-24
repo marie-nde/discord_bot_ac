@@ -8,6 +8,8 @@ const Wlist = require ('./models/wlist');
 const Wishlist = require('./models/wishlist');
 const Craft = require('./models/craft');
 const Users = require ('./models/usersList');
+// const Keke = require('./models/keke');
+// const Pnj = require('./models/pnj');
 
 const client = new Discord.Client();
 client.commands = new Discord.Collection();
@@ -135,7 +137,7 @@ client.on('message', async message => {
             return message.channel.send(`tg nn ?`);
         }
         else {
-            const emoji = message.guild.emojis.cache.find(emoji => emoji.name === 'angry_poticha');
+            const emoji = message.guild.emojis.cache.find(emoji => emoji.name === 'uncomfy');
             return message.react(emoji);
 
         }
@@ -197,7 +199,7 @@ client.on('message', async message => {
         }
         
         else {
-            if (args.length > 0) return message.reply(`la commande ${prefix}${commandName} prend zéro ou un argument.\n\`${prefix}${commandName}\` pour afficher son propre passeport.\n\`${prefix}${commandName} <Membre>\` pour afficher le passeport d'un.e autre membre.`);
+            if (args.length > 0) return message.reply(`la commande ${prefix}${commandName} n'est pas correctement utilisée.\n\`${prefix}${commandName} help\` pour afficher toutes les commandes.`);
             var taggedUser = message.mentions.users.first() || message.author;
             if (obj && taggedUser === message.author) {
                 for (i = 0; i < usersList.length; i++) {
@@ -421,7 +423,7 @@ client.on('message', async message => {
         }
 
         else {
-            if (args.length > 0) return message.reply(`la commande ${prefix}${commandName} prend entre zéro et un argument.\n\`${prefix}${commandName}\` pour afficher son propre dodocode.\n\`${prefix}${commandName} <Membre>\` pour afficher le dodocode d'un autre membre.\n\`${prefix}${commandName} all\` pour afficher tous les dodocodes actifs.`);
+            if (args.length > 0) return message.reply(`la commande ${prefix}${commandName} n'est pas correctement utilisée.\n\`${prefix}${commandName} help\` pour afficher toutes les commandes.`);
             var taggedUser = message.mentions.users.first() || message.author;
             if (obj && taggedUser === message.author) {
                 for (i = 0; i < usersList.length; i++) {
@@ -774,7 +776,7 @@ client.on('message', async message => {
         }
 
         else {
-            if (args.length > 0) return message.reply(`la commande \`${prefix}${commandName}\` prend zéro ou un argument.\n\`${prefix}${commandName}\` pour afficher sa propre liste d'attente.\n\`${prefix}${commandName} <Membre>\` pour afficher la liste d'attente d'un.e autre membre.`);
+            if (args.length > 0) return message.reply(`la commande ${prefix}${commandName} n'est pas correctement utilisée.\n\`${prefix}${commandName} help\` pour afficher toutes les commandes.`);
             var taggedUser = message.mentions.users.first() || message.author;
             if (obj && taggedUser === message.author) {
                 for (i = 0; i < usersList.length; i++) {
@@ -1005,7 +1007,7 @@ client.on('message', async message => {
         }
 
         else {
-            if (args.length > 0) return message.reply(`la commande \`${prefix}${commandName}\` prend zéro ou un argument.\n\`${prefix}${commandName}\` pour afficher sa propre wishlist.\n\`${prefix}${commandName} <Membre>\` pour afficher la wishlist d'un.e autre membre.`);
+            if (args.length > 0) return message.reply(`la commande ${prefix}${commandName} n'est pas correctement utilisée.\n\`${prefix}${commandName} help\` pour afficher toutes les commandes.`);
             var taggedUser = message.mentions.users.first() || message.author;
             if (obj && taggedUser === message.author) {
                 for (i = 0; i < usersList.length; i++) {
@@ -1234,7 +1236,7 @@ client.on('message', async message => {
         }
 
         else {
-            if (args.length > 0) return message.reply(`la commande \`${prefix}${commandName}\` prend zéro ou un argument.\n\`${prefix}${commandName}\` pour afficher sa propre liste de crafts.\n\`${prefix}${commandName} <Membre>\` pour afficher la liste de crafts d'un.e autre membre.`);
+            if (args.length > 0) return message.reply(`la commande ${prefix}${commandName} n'est pas correctement utilisée.\n\`${prefix}${commandName} help\` pour afficher toutes les commandes.`);
             if (!obj || isNaN(parseInt(obj))) {
                 var taggedUser = message.mentions.users.first() || message.author;
                 if (obj && taggedUser === message.author) {
