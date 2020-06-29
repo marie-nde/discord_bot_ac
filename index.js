@@ -8,6 +8,7 @@ const Wlist = require ('./models/wlist');
 const Wishlist = require('./models/wishlist');
 const Craft = require('./models/craft');
 const Users = require ('./models/usersList');
+const Card = require ('./models/card');
 // const Keke = require('./models/keke');
 // const Pnj = require('./models/pnj');
 
@@ -72,6 +73,11 @@ client.on('message', async message => {
     }).sort();
 
     if (answered === false && message.author.id === userCard) {
+        const checkCard = await Card.findOne({
+            userID: message.author.id,
+            serverID: message.guild.id
+        });
+        var toAdd = checkCard.points;
         number = 4;
         var random = Math.floor(Math.random() * (number - 1 + 1)) + 1;
         switch (random) {
@@ -89,6 +95,12 @@ client.on('message', async message => {
         else if (answer === "coeur") var emoji = '❤️';
         else if (answer === "carreau") var emoji = '♦️';
         if (num === random) {
+            const update = await Card.findOneAndUpdate({
+                userID: message.author.id,
+                serverID: message.guild.id
+                }, {
+                    $set: { points: toAdd + 5 }
+                });
             message.react(emoji);
             message.reply('bonne réponse ! On dirait bien que je vais emménager bientôt !');
         }
@@ -120,10 +132,49 @@ client.on('message', async message => {
                 .setColor(`${color}`)
                 .setTitle(`🎲 ${prefix}${commandName}`)
                 newEmbed.addFields(
-                    { name: `**Lancer un mini jeu :**`, value: `\`${prefix}${commandName}\` et suivre les instructions.`}
+                    { name: `**Lancer un mini jeu :**`, value: `\`${prefix}${commandName}\` et suivre les instructions.`},
                     )
                 .setFooter('Bot par Marie#1702');
             return message.channel.send(newEmbed);
+        }
+        else if (obj === 'leaderboard') {
+            const checkCard = await Card.find({
+                serverID: message.guild.id
+            });
+            if (checkCard.length === 0) return message.channel.send(`Aucune donnée n'a été trouvée.`);
+            const newCard = await Card.find({
+                serverID: message.guild.id
+            }).sort({ points: -1 });
+            if (newCard.length === 0) return message.channel.send(`Aucune donnée n'a été trouvée.`);
+            var total = 0;
+            for (i = 0; i < newCard.length; i++) {
+                if (newCard[i].points === 0) break;
+                if (total === 10) break;
+                total++;
+            }
+            if (total === 0) return message.channel.send(`Aucune donnée n'a été trouvée.`);
+            let newEmbed = new Discord.MessageEmbed()
+                .setColor(`${color}`)
+                .setTitle(`🎲 Leaderboard`)
+            for (i = 0; i < total; i++) {
+                var user = client.users.cache.get(newCard[i].userID);
+                if (newCard[i].points > 0) newEmbed.addField(`${i + 1}. ${user.username}`, `${newCard[i].points} points`);
+            }
+            newEmbed.setFooter('Bot par Marie#1702');
+            return message.channel.send(newEmbed);
+        }
+        const checkCard = await Card.findOne({
+            userID: message.author.id,
+            serverID: message.guild.id
+        })
+        if (!checkCard) {
+            const newCard = new Card({
+                _id: mongoose.Types.ObjectId(),
+                userID: message.author.id,
+                serverID: message.guild.id,
+                points: 0
+            })
+            await newCard.save();
         }
         message.reply('devine quelle carte je tiens dans ma main !\nRéponses possibles : \`carreau\`, \`coeur\`, \`pique\` ou \`trèfle\` !');
         answered = false;
