@@ -137,6 +137,7 @@ client.on('message', async message => {
                 .setFooter('Bot par Marie#1702');
             return message.channel.send(newEmbed);
         }
+
         else if (obj === 'leaderboard') {
             const checkCard = await Card.find({
                 serverID: message.guild.id
@@ -163,23 +164,50 @@ client.on('message', async message => {
             newEmbed.setFooter('Bot par Marie#1702');
             return message.channel.send(newEmbed);
         }
-        const checkCard = await Card.findOne({
-            userID: message.author.id,
-            serverID: message.guild.id
-        })
-        if (!checkCard) {
-            const newCard = new Card({
-                _id: mongoose.Types.ObjectId(),
-                userID: message.author.id,
-                serverID: message.guild.id,
-                points: 0
-            })
-            await newCard.save();
+
+        else if (obj === 'point' || obj === 'points') {
+            var taggedUser = message.mentions.users.first() || message.author;
+            if (args[0]) var who = args[0].toLowerCase();
+            if (args[0] && taggedUser === message.author) {
+                for (i = 0; i < usersList.length; i++) {
+                    var taggedUser = 'undefined';
+                    if (usersList[i].username.includes(`${who}`)) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
+                }
+            }
+            if (args[0] && (taggedUser === 'undefined' || !taggedUser)) return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} ${obj} <Membre>\` pour afficher les points d'un.e autre membre.`);
+            const newCard = await Card.findOne({
+                userID: taggedUser.id,
+                serverID: message.guild.id
+            });
+            if (!newCard && taggedUser != message.author) return message.reply(`aucune donnée n'a été trouvée pour cet utilisateur.`);
+            if (!newCard) return message.reply(`aucune donnée n\'a été trouvée.\n\`${prefix}${commandName} pour lancer le mini jeu.`);
+            let newEmbed = new Discord.MessageEmbed()
+                .setColor(`${color}`)
+                .setTitle(`🎲 Cards game`)
+                .addField(`${taggedUser.username}`, `${newCard.points} points`)
+                .setFooter('Bot par Marie#1702');
+            return message.channel.send(newEmbed);
         }
-        message.reply('devine quelle carte je tiens dans ma main !\nRéponses possibles : \`carreau\`, \`coeur\`, \`pique\` ou \`trèfle\` !');
-        answered = false;
-        userCard = message.author.id;
-        return;
+
+        else {
+            const checkCard = await Card.findOne({
+                userID: message.author.id,
+                serverID: message.guild.id
+            })
+            if (!checkCard) {
+                const newCard = new Card({
+                    _id: mongoose.Types.ObjectId(),
+                    userID: message.author.id,
+                    serverID: message.guild.id,
+                    points: 0
+                });
+                await newCard.save();
+            }
+            message.reply('devine quelle carte je tiens dans ma main !\nRéponses possibles : \`carreau\`, \`coeur\`, \`pique\` ou \`trèfle\` !');
+            answered = false;
+            userCard = message.author.id;
+            return;
+        }
     }
 
     else if (commandName === 'tg') {
@@ -1048,8 +1076,8 @@ client.on('message', async message => {
                 newEmbed.addFields(
                     { name: `**Créer une wishlist :**`, value: `\`${prefix}${commandName} create Objet,Objet\``},
                     { name: `**Supprimer sa wishlist :**`, value: `\`${prefix}${commandName} reset\``},
-                    { name: `**Ajouter des objets à sa wishlist :**`, value: `\`${prefix}${commandName} add Objet,Objet\``},
-                    { name: `**Supprimer des objets de sa wishlist :**`, value: `\`${prefix}${commandName} delete <Numéro de l'objet>,<Numéro de l'objet>\``},
+                    { name: `**Ajouter des objets à sa wishlist :**`, value: `\`${prefix}${commandName} add <Objet>,<Objet>\``},
+                    { name: `**Supprimer des objets de sa wishlist :**`, value: `\`${prefix}${commandName} delete <Numéro de l'objet> <Numéro de l'objet>\``},
                     { name: `**Afficher sa wishlist :**`, value: `\`${prefix}${commandName}\``},
                     { name: `**Afficher la wishlist d'un membre :**`, value: `\`${prefix}${commandName} <Membre>\``}
                     )
@@ -1276,8 +1304,8 @@ client.on('message', async message => {
                 newEmbed.addFields(
                     { name: `**Créer une liste de crafts :**`, value: `\`${prefix}${commandName} create Objet,Objet\``},
                     { name: `**Supprimer sa liste de crafts :**`, value: `\`${prefix}${commandName} reset\``},
-                    { name: `**Ajouter des objets à sa liste de crafts :**`, value: `\`${prefix}${commandName} add Objet,Objet\``},
-                    { name: `**Supprimer des objets de sa liste de crafts :**`, value: `\`${prefix}${commandName} delete <Numéro de l'objet>,<Numéro de l'objet>\``},
+                    { name: `**Ajouter des objets à sa liste de crafts :**`, value: `\`${prefix}${commandName} add <Objet>,<Objet>\``},
+                    { name: `**Supprimer des objets de sa liste de crafts :**`, value: `\`${prefix}${commandName} delete <Numéro de l'objet> <Numéro de l'objet>\``},
                     { name: `**Afficher sa liste de crafts :**`, value: `\`${prefix}${commandName}\``},
                     { name: `**Afficher la liste de crafts d'un membre :**`, value: `\`${prefix}${commandName} <Membre>\``},
                     { name: `**Afficher la page précisée de tous les gens ayant une liste de crafts :**`, value: `\`${prefix}${commandName} <Page>\``}
