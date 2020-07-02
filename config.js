@@ -1,4 +1,5 @@
 module.exports = {
-    prefix: "ac!",
+    prefix: "AC!",
+    prefix2: "Ac!",
     token: "TOKEN",
 }
