@@ -9,7 +9,6 @@ const Wishlist = require('./models/wishlist');
 const Craft = require('./models/craft');
 const Users = require ('./models/usersList');
 const Card = require ('./models/card');
-// const Keke = require('./models/keke');
 // const Pnj = require('./models/pnj');
 
 const client = new Discord.Client();
@@ -541,6 +540,7 @@ client.on('message', async message => {
                     }
                 }
             }
+            if (args.length > 25) return message.reply(`la liste d'attente ne peut pas comporter plus de 25 membres.`);
             var j = 0;
             var i = 1;
             while (j < args.length - 1) {
@@ -679,6 +679,7 @@ client.on('message', async message => {
                 serverID: message.guild.id
             })
             if (!newWlist) return message.reply(`aucune donnée n'a été trouvée.\n\`${prefix}${commandName} create <Membre> <Membre>\` pour créer une liste d'attente.`);
+            if (args.length + newWlist.number > 25) return message.reply(`la liste d'attente ne peut pas comporter plus de 25 membres.`);
             for (i = 0; i < args.length; i++) {
                 if (getUserFromMention(args[i])) args[i] = getUserFromMention(args[i]);
                 else {
@@ -903,6 +904,7 @@ client.on('message', async message => {
             parse.splice(0, 2);
             const str = parse.join(' ');
             const wish = str.split(',');
+            if (wish.length > 25) return message.reply(`la wishlist ne peut pas comporter plus de 25 arguments.`);
             var j = 0;
             var i = 1;
             while (j < wish.length - 1) {
@@ -968,6 +970,7 @@ client.on('message', async message => {
             parse.splice(0, 2);
             const str = parse.join(' ');
             const wish = str.split(',');
+            if (wish.length + newWishlist.number > 25) return message.reply(`la wishlist ne peut pas comporter plus de 25 arguments.`);
             var j = 0;
             var i = 1;
             while (j < wish.length - 1) {
@@ -1127,6 +1130,7 @@ client.on('message', async message => {
             parse.splice(0, 2);
             const str = parse.join(' ');
             const wish = str.split(',');
+            if (wish.length > 25) return message.reply(`la commande \`${prefix}${commandName} ${obj}\` ne prend pas plus de 25 arguments.`);
             var j = 0;
             var i = 1;
             while (j < wish.length - 1) {
@@ -1186,7 +1190,7 @@ client.on('message', async message => {
         }
 
         else if (obj === 'add') {
-            if (args.length === 0) return message.reply(`la commande \`${prefix}${commandName} ${obj}\` prend au moins un argument.\n\`${prefix}${commandName} ${obj} <Objet>,<Objet>\` pour ajouter des objets à ta liste de crafts.`);
+            if (args.length === 0) return message.reply(`la commande \`${prefix}${commandName} ${obj}\` prend entre un et 24 arguments.\n\`${prefix}${commandName} ${obj} <Objet>,<Objet>\` pour ajouter des objets à ta liste de crafts.`);
             const newCraft = await Craft.findOne({
                 userID: message.author.id,
                 serverID: message.guild.id
@@ -1196,6 +1200,7 @@ client.on('message', async message => {
             parse.splice(0, 2);
             const str = parse.join(' ');
             const wish = str.split(',');
+            if (wish.length + newCraft.number > 25) return message.reply(`la liste de crafts ne peut pas comporter plus de 25 arguments.`);
             var j = 0;
             var i = 1;
             while (j < wish.length - 1) {
@@ -1367,7 +1372,7 @@ client.on('message', async message => {
                         let user = client.users.cache.get(res[index].userID);
                         if (!user) var name = 'Utilisateur inconnu';
                         else var name = user.username;
-                        newEmbed.addField(`${prefix}${commandName} ${name}`, `**${index + 1}.** ${user.username}`)
+                        newEmbed.addField(`${prefix}${commandName} ${name}`, `**${index + 1}.** ${name}`)
                         index++;
                     }
                 }
