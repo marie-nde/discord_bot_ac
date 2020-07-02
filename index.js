@@ -1,7 +1,7 @@
 const fs = require('fs');
 const Discord = require('discord.js');
 const mongoose = require('mongoose');
-const { prefix, token } = require('./config.js');
+const { prefix, token, prefix2 } = require('./config.js');
 const Data = require('./models/id');
 const Dodo = require ('./models/dodo');
 const Wlist = require ('./models/wlist');
@@ -111,7 +111,7 @@ client.on('message', async message => {
         return;
     }
     
-    if (!message.content.startsWith(prefix)) return;
+    if (!message.content.startsWith(prefix) && !message.content.startsWith(prefix2)) return;
     if (!commandName) return;
     
     function getUserFromMention(mention) {
@@ -159,7 +159,9 @@ client.on('message', async message => {
                 .setTitle(`🎲 Leaderboard`)
             for (i = 0; i < total; i++) {
                 var user = client.users.cache.get(newCard[i].userID);
-                if (newCard[i].points > 0) newEmbed.addField(`${i + 1}. ${user.username}`, `${newCard[i].points} points`);
+                if (!user) var name = 'Utilisateur inconnu';
+                else var name = user.username;
+                if (newCard[i].points > 0) newEmbed.addField(`${i + 1}. ${name}`, `${newCard[i].points} points`);
             }
             newEmbed.setFooter('Bot par Marie#1702');
             return message.channel.send(newEmbed);
@@ -180,11 +182,11 @@ client.on('message', async message => {
                 serverID: message.guild.id
             });
             if (!newCard && taggedUser != message.author) return message.reply(`aucune donnée n'a été trouvée pour cet utilisateur.`);
-            if (!newCard) return message.reply(`aucune donnée n\'a été trouvée.\n\`${prefix}${commandName} pour lancer le mini jeu.`);
+            if (!newCard) return message.reply(`aucune donnée n\'a été trouvée.\n\`${prefix}${commandName}\` pour lancer le mini jeu.`);
             let newEmbed = new Discord.MessageEmbed()
                 .setColor(`${color}`)
-                .setTitle(`🎲 Cards game`)
-                .addField(`${taggedUser.username}`, `${newCard.points} points`)
+                .setTitle(`🎲 ${taggedUser.username}`)
+                .setDescription(`${newCard.points} points`)
                 .setFooter('Bot par Marie#1702');
             return message.channel.send(newEmbed);
         }
@@ -245,7 +247,7 @@ client.on('message', async message => {
                     console.log(err);
                     return message.reply('les données n\'ont pas pu être mises à jour.');
                 }),
-                message.reply(`les données ont bien été mises à jour.\n\`${prefix}${commandName}\` pour voir ton passeport.\n\`${prefix}bio create "Texte"\` pour ajouter une biographie à ton passeport.`);
+                message.reply(`les données ont bien été mises à jour.\n\`${prefix}${commandName}\` pour voir ton passeport.\n\`${prefix}bio create "Texte"\` pour y ajouter une biographie.`);
             }
 
             else if (args.length != 4) {
@@ -278,7 +280,7 @@ client.on('message', async message => {
         }
         
         else {
-            if (args.length > 0) return message.reply(`la commande ${prefix}${commandName} n'est pas correctement utilisée.\n\`${prefix}${commandName} help\` pour afficher toutes les commandes.`);
+            if (args.length > 0) return message.reply(`la commande ${prefix}${commandName} n'est pas correctement utilisée.\n\`${prefix}${commandName} help\` pour plus d'informations sur la commande.`);
             var taggedUser = message.mentions.users.first() || message.author;
             if (obj && taggedUser === message.author) {
                 for (i = 0; i < usersList.length; i++) {
@@ -286,7 +288,7 @@ client.on('message', async message => {
                     if (usersList[i].username.includes(`${obj}`)) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
                 }
             }
-            if (obj && taggedUser === 'undefined') return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <Membre>\` pour afficher le passeport d'un.e autre membre.`);
+            if (obj && (taggedUser === 'undefined' || !taggedUser)) return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <Membre>\` pour afficher le passeport d'un.e autre membre.`);
             const newData = await Data.findOne({
                 userID: taggedUser.id,
                 serverID: message.guild.id
@@ -334,7 +336,7 @@ client.on('message', async message => {
                 userID: message.author.id,
                 serverID: message.guild.id
             }, {
-                $set: { bio: 'Pas de bio, pour la modifier : \`ac!bio create \"Exemple\"\`'}
+                $set: { bio: `Pas de bio, pour la modifier : \`${prefix}bio create \"Exemple\"\``}
             });
             return message.reply('ta bio a bien été effacée.');
         }
@@ -351,12 +353,8 @@ client.on('message', async message => {
             return message.channel.send(newEmbed);
         }
 
-        else if (!obj) {
-            return message.reply(`la commande ${prefix}${commandName} prend au moins un argument.\n\`${prefix}${commandName} create "Ceci est une biographie"\` pour ajouter une biographie au passeport.\n\`${prefix}${commandName} reset\` pour supprimer sa biographie du passeport.`);
-        }
-
         else {
-            return message.reply(`la commande ${prefix}${commandName} sert à créer ou supprimer une biographie.\n\`${prefix}${commandName} create "Ceci est une biographie"\` pour ajouter une biographie au passeport.\n\`${prefix}${commandName} reset\` pour supprimer sa biographie du passeport.`);
+            return message.reply(`la commande ${prefix}${commandName} sert à créer ou supprimer une biographie.\n\`${prefix}${commandName} create "Ceci est une biographie"\` pour ajouter une biographie au passeport.\n\`${prefix}${commandName} reset\` pour l'effacer.`);
         }
     }
 
@@ -384,7 +382,7 @@ client.on('message', async message => {
                     if (usersList[i].username.includes(`${obj}`)) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
                 }
             }
-        if (obj && taggedUser === 'undefined') return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <Membre>\` pour afficher le code ami d'un.e autre membre.\n\`${prefix}${commandName} <Page>\` pour afficher une page des codes ami.`);
+        if (obj && (taggedUser === 'undefined' || !taggedUser)) return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <Membre>\` pour afficher le code ami d'un.e autre membre.\n\`${prefix}${commandName} <Page>\` pour afficher une page des codes ami.`);
             if (obj && taggedUser === message.author && message.author != message.mentions.users.first()) return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <Membre>\` pour afficher le code ami d'un.e autre membre.\n\`${prefix}${commandName} <Page>\` pour afficher une page des codes ami.`);
             const newData = await Data.findOne({
                 userID: taggedUser.id,
@@ -407,7 +405,7 @@ client.on('message', async message => {
             if (res.length === 0) return message.channel.send('Aucun code ami n\'a été ajouté.');
             var page = parseInt(obj, 10);
             if (isNaN(page)) var page = 1;
-            var totalPages = Math.trunc(res.length / 10) + 1;
+            var totalPages = Math.trunc(res.length / 11) + 1;
             if ((page > totalPages || page < 1) && totalPages === 1) return message.reply(`la page demandée n'existe pas. Essayez \`${prefix}${commandName} 1\``);
             if (page > totalPages || page < 1) return message.reply(`la page demandée n'existe pas. Cherchez une page entre 1 et ${totalPages}.`);
             var index = (page * 10) - 10;
@@ -417,7 +415,9 @@ client.on('message', async message => {
             for (i = 0; i < 10; i++) {
                 if (index < res.length) {
                     let user = client.users.cache.get(res[index].userID);
-                    newEmbed.addField(`${index + 1}. ${user.username}`, `${res[index].code}`)
+                    if (!user) var name = 'Utilisateur inconnu';
+                    else var name = user.username;
+                    newEmbed.addField(`${index + 1}. ${name}`, `${res[index].code}`)
                     index++;
                 }
             }
@@ -447,7 +447,7 @@ client.on('message', async message => {
                 console.log(err);
                 return message.reply('les données n\'ont pas pu être mises à jour.');
             }),
-            message.reply(`les données ont bien été mises à jour.\n\`${prefix}${commandName}\` pour voir ton dodocode.\n\`${prefix}${commandName} reset\` pour supprimer ton dodocode.`);
+            message.reply(`les données ont bien été mises à jour.\n\`${prefix}${commandName}\` pour voir ton dodocode.\n\`${prefix}${commandName} reset\` pour l'effacer.`);
             const taggedUser = message.author;
             let newEmbed = new Discord.MessageEmbed()
                 .setColor(`${color}`)
@@ -478,7 +478,9 @@ client.on('message', async message => {
                 .setTitle('Dodocodes actifs')
             for (i = 0; i < res.length; i++) {
                 let user = client.users.cache.get(res[i].userID);
-                newEmbed.addField(`${i + 1}. Chez ${user.username}`, `**Dodocode** : ${res[i].dodocode}\n**Raison** : ${res[i].raison}`)
+                if (!user) var name = 'Utilisateur inconnu';
+                else var name = user.username;
+                newEmbed.addField(`${i + 1}. Chez ${name}`, `**Dodocode** : ${res[i].dodocode}\n**Raison** : ${res[i].raison}`)
             }
             newEmbed.setFooter('Bot par Marie#1702');
             return message.channel.send(newEmbed);
@@ -502,7 +504,7 @@ client.on('message', async message => {
         }
 
         else {
-            if (args.length > 0) return message.reply(`la commande ${prefix}${commandName} n'est pas correctement utilisée.\n\`${prefix}${commandName} help\` pour afficher toutes les commandes.`);
+            if (args.length > 0) return message.reply(`la commande ${prefix}${commandName} n'est pas correctement utilisée.\n\`${prefix}${commandName} help\` pour plus d'informations sur la commande.`);
             var taggedUser = message.mentions.users.first() || message.author;
             if (obj && taggedUser === message.author) {
                 for (i = 0; i < usersList.length; i++) {
@@ -510,13 +512,13 @@ client.on('message', async message => {
                     if (usersList[i].username.includes(`${obj}`)) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
                 }
             }
-            if (obj && taggedUser === 'undefined') return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <Membre>\` pour afficher le dodocode d'un.e autre membre.`);
+            if (obj && (taggedUser === 'undefined' || !taggedUser)) return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <Membre>\` pour afficher le dodocode d'un.e autre membre.`);
             const newDodo = await Dodo.findOne({
                 userID: taggedUser.id,
 			    serverID: message.guild.id
             });
             if (!newDodo && taggedUser === message.author) return message.reply(`aucun dodocode actif n\'a été trouvé.\n\`${prefix}${commandName} create <DodoCode> <"Raison">\` pour créer un dodocode.`);
-            if (!newDodo && taggedUser != message.author) return message.reply(`aucun dodocode actif n\'a été trouvé pour cette personne.`);
+            if (!newDodo && taggedUser != message.author) return message.reply(`aucun dodocode actif n\'a été trouvé pour cet utilisateur.`);
             let newEmbed = new Discord.MessageEmbed()
                 .setColor(`${color}`)
                 .setTitle(`Dodocode de ${taggedUser.username}`)
@@ -568,7 +570,7 @@ client.on('message', async message => {
                 console.log(err);
                 return message.reply('les données n\'ont pas pu être mises à jour.');
             }),
-            message.reply(`les données ont bien été mises à jour.\n\`${prefix}${commandName}\` pour voir ta liste d'attente.\n\`${prefix}${commandName} reset\` pour supprimer ta liste d'attente.\n\`${prefix}${commandName} next\` pour passer à la personne suivante.\n\`${prefix}${commandName} add <Membre> <Membre>\` pour ajouter des membres à ta liste d'attente.\n\`${prefix}${commandName} delete <Membre> <Membre>\` pour supprimer des membres de ta liste d'attente.`);
+            message.reply(`les données ont bien été mises à jour.\n\`${prefix}${commandName}\` pour voir ta liste d'attente.\n\`${prefix}${commandName} reset\` pour l'effacer.\n\`${prefix}${commandName} next\` pour passer à la personne suivante.\n\`${prefix}${commandName} add <Membre> <Membre>\` pour y ajouter des membres.\n\`${prefix}${commandName} delete <Membre> <Membre>\` pour supprimer des membres.`);
             for (i = 0; i < number; i++) {
                 const user = client.users.cache.get(args[i]);
                 if (!user) break;
@@ -590,7 +592,7 @@ client.on('message', async message => {
             for (i = 0; i < number; i++) {
                 const user = client.users.cache.get(args[i]);
                 if (!user) break;
-                newEmbed.addField(`ac!${commandName} next`, `**${i + 1}.** ${user.username}`);
+                newEmbed.addField(`${prefix}${commandName} next`, `**${i + 1}.** ${user.username}`);
             }
             newEmbed.setFooter('Bot par Marie#1702');
             message.channel.send(newEmbed);
@@ -608,7 +610,7 @@ client.on('message', async message => {
         }
 
         else if (obj === 'next') {
-            if (args.length > 1) return message.reply(`la commande \`${prefix}${commandName} ${obj}\` prend 0 ou 1 argument.\n\`${prefix}${commandName} ${obj}\` pour passer à la personne suivante dans sa propre liste d'attente.\n\`${prefix}${commandName} ${obj} <Membre>\` pour passer à la personne suivante dans la liste d'attente d'un.e autre membre.`);
+            if (args.length > 1) return message.reply(`la commande \`${prefix}${commandName} ${obj}\` prend zéro ou un argument.\n\`${prefix}${commandName} ${obj}\` pour passer à la personne suivante dans ta liste d'attente.\n\`${prefix}${commandName} ${obj} <Membre>\` pour passer à la personne suivante dans la liste d'attente d'un.e autre membre.`);
             var taggedUser = message.mentions.users.first() || message.author;
             if (args[0] && taggedUser === message.author) {
                 for (i = 0; i < usersList.length; i++) {
@@ -616,7 +618,7 @@ client.on('message', async message => {
                     if (usersList[i].username.includes(`${args[0].toLowerCase()}`)) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
                 }
             }
-            if (args[0] && taggedUser === 'undefined') return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <Membre>\` pour afficher la liste d'attente d'un.e autre membre.`);
+            if (args[0] && (taggedUser === 'undefined' || !taggedUser)) return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <Membre>\` pour afficher la liste d'attente d'un.e autre membre.`);
             const newWlist = await Wlist.findOne({
                 userID: taggedUser.id,
                 serverID: message.guild.id
@@ -662,7 +664,7 @@ client.on('message', async message => {
             for (i = 0; i < newOne.number; i++) {
                 var user = client.users.cache.get(list[i]);
                 if (!user) break;
-                newEmbed.addField(`ac!${commandName} next`, `**${i + 1}.** ${user.username}`);
+                newEmbed.addField(`${prefix}${commandName} next`, `**${i + 1}.** ${user.username}`);
             }
             newEmbed.setFooter('Bot par Marie#1702');
             message.channel.send(newEmbed);
@@ -671,7 +673,7 @@ client.on('message', async message => {
         }
 
         else if (obj === 'add') {
-            if (args.length === 0) return message.reply(`la commande \`${prefix}${commandName} ${obj}\` prend au moins un argument.\n\`${prefix}${commandName} ${obj} <Membre> <Membre>\` pour ajouter des membres à sa liste d'attente.`);
+            if (args.length === 0) return message.reply(`la commande \`${prefix}${commandName} ${obj}\` prend au moins un argument.\n\`${prefix}${commandName} ${obj} <Membre> <Membre>\` pour ajouter des membres à ta liste d'attente.`);
             const newWlist = await Wlist.findOne({
                 userID: message.author.id,
                 serverID: message.guild.id
@@ -697,7 +699,7 @@ client.on('message', async message => {
             }
             var number = 0;
             for (i = 0; i < args.length; i++) {
-                if (!client.users.cache.get(args[i])) return message.reply(`utilisateur introuvable.\n\`${prefix}${commandName} ${obj} <Membre> <Membre>\` pour ajouter des membres à sa liste d'attente.`);
+                if (!client.users.cache.get(args[i])) return message.reply(`utilisateur introuvable.\n\`${prefix}${commandName} ${obj} <Membre> <Membre>\` pour ajouter des membres à ta liste d'attente.`);
                 number++;
             }
             const check = newWlist.users;
@@ -737,14 +739,14 @@ client.on('message', async message => {
             for (i = 0; i < newOne.number; i++) {
                 var user = client.users.cache.get(list[i]);
                 if (!user) break;
-                newEmbed.addField(`ac!${commandName} next`, `**${i + 1}.** ${user.username}`);
+                newEmbed.addField(`${prefix}${commandName} next`, `**${i + 1}.** ${user.username}`);
             }
             newEmbed.setFooter('Bot par Marie#1702');
             return message.channel.send(newEmbed);
         }
 
         else if (obj === 'delete' || obj === 'del') {
-            if (args.length === 0) return message.reply(`la commande \`${prefix}${commandName} ${obj}\` prend au moins un argument.\n\`${prefix}${commandName} ${obj} <Membre> <Membre>\` pour supprimer des membres de sa liste d'attente.`);
+            if (args.length === 0) return message.reply(`la commande \`${prefix}${commandName} ${obj}\` prend au moins un argument.\n\`${prefix}${commandName} ${obj} <Membre> <Membre>\` pour supprimer des membres de ta liste d'attente.`);
             const newWlist = await Wlist.findOne({
                 userID: message.author.id,
                 serverID: message.guild.id
@@ -770,7 +772,7 @@ client.on('message', async message => {
             }
             var number = 0;
             for (i = 0; i < args.length; i++) {
-                if (!client.users.cache.get(args[i])) return message.reply(`utilisateur introuvable.\n\`${prefix}${commandName} ${obj} <Membre> <Membre>\` pour supprimer des membres de sa liste d'attente.`);
+                if (!client.users.cache.get(args[i])) return message.reply(`utilisateur introuvable.\n\`${prefix}${commandName} ${obj} <Membre> <Membre>\` pour supprimer des membres de ta liste d'attente.`);
                 number++;
             }
             var i = 0;
@@ -827,7 +829,7 @@ client.on('message', async message => {
             for (i = 0; i < newOne.number; i++) {
                 var user = client.users.cache.get(list[i]);
                 if (!user) break;
-                newEmbed.addField(`ac!${commandName} next`, `**${i + 1}.** ${user.username}`);
+                newEmbed.addField(`${prefix}${commandName} next`, `**${i + 1}.** ${user.username}`);
             }
             newEmbed.setFooter('Bot par Marie#1702');
             message.channel.send(newEmbed);
@@ -855,7 +857,7 @@ client.on('message', async message => {
         }
 
         else {
-            if (args.length > 0) return message.reply(`la commande ${prefix}${commandName} n'est pas correctement utilisée.\n\`${prefix}${commandName} help\` pour afficher toutes les commandes.`);
+            if (args.length > 0) return message.reply(`la commande ${prefix}${commandName} n'est pas correctement utilisée.\n\`${prefix}${commandName} help\` pour plus d'informations sur la commande.`);
             var taggedUser = message.mentions.users.first() || message.author;
             if (obj && taggedUser === message.author) {
                 for (i = 0; i < usersList.length; i++) {
@@ -863,7 +865,7 @@ client.on('message', async message => {
                     if (usersList[i].username.includes(`${obj}`)) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
                 }
             }
-            if (obj && taggedUser === 'undefined') return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <Membre>\` pour afficher la liste d'attente d'un.e autre membre.`);
+            if (obj && (taggedUser === 'undefined' || !taggedUser)) return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <Membre>\` pour afficher la liste d'attente d'un.e autre membre.`);
             const newWlist = await Wlist.findOne({
                 userID: taggedUser.id,
 			    serverID: message.guild.id
@@ -882,7 +884,7 @@ client.on('message', async message => {
             for (i = 0; i < newWlist.number; i++) {
                 var user = client.users.cache.get(list[i]);
                 if (!user) break;
-                newEmbed.addField(`ac!${commandName} next`, `**${i + 1}.** ${user.username}`);
+                newEmbed.addField(`${prefix}${commandName} next`, `**${i + 1}.** ${user.username}`);
             }
             newEmbed.setFooter('Bot par Marie#1702');
             return message.channel.send(newEmbed);
@@ -896,7 +898,7 @@ client.on('message', async message => {
                 userID: message.author.id,
                 serverID: message.guild.id
             });
-            if (check) return message.reply(`une wishlist existe déjà.\n\`${prefix}${commandName} reset\` pour effacer ta wishlist.\n\`${prefix}${commandName} add <Objet>,<Objet>\` pour ajouter des objets.\n\`${prefix}${commandName} delete <Numéro> <Numéro>\` pour supprimer des objets.`);
+            if (check) return message.reply(`une wishlist existe déjà.\n\`${prefix}${commandName} reset\` pour l'effacer.\n\`${prefix}${commandName} add <Objet>,<Objet>\` pour ajouter des objets.\n\`${prefix}${commandName} delete <Numéro> <Numéro>\` pour supprimer des objets.`);
             const parse = message.content.slice(prefix.length).split(/ +/);
             parse.splice(0, 2);
             const str = parse.join(' ');
@@ -921,7 +923,7 @@ client.on('message', async message => {
                 console.log(err);
                 return message.reply('les données n\'ont pas pu être mises à jour.');
             }),
-            message.reply(`les données ont bien été mises à jour.\n\`${prefix}${commandName}\` pour voir ta wishlist.\n\`${prefix}${commandName} reset\` pour supprimer ta wishlist.\n\`${prefix}${commandName} add <Objet>,<Objet>\` pour ajouter des objets.\n\`${prefix}${commandName} delete <Numéro> <Numéro>\` pour supprimer des objets.`)
+            message.reply(`les données ont bien été mises à jour.\n\`${prefix}${commandName}\` pour voir ta wishlist.\n\`${prefix}${commandName} reset\` pour la supprimer.\n\`${prefix}${commandName} add <Objet>,<Objet>\` pour ajouter des objets.\n\`${prefix}${commandName} delete <Numéro> <Numéro>\` pour supprimer des objets.`)
             for (i = 0; i < wish.length; i++) {
                 const update = await Wishlist.findOneAndUpdate({
                     userID: message.author.id,
@@ -956,7 +958,7 @@ client.on('message', async message => {
         }
 
         else if (obj === 'add') {
-            if (args.length === 0) return message.reply(`la commande \`${prefix}${commandName} ${obj}\` prend au moins un argument.\n\`${prefix}${commandName} ${obj} <Objet>,<Objet>\` pour ajouter des objets à sa wishlist.`);
+            if (args.length === 0) return message.reply(`la commande \`${prefix}${commandName} ${obj}\` prend au moins un argument.\n\`${prefix}${commandName} ${obj} <Objet>,<Objet>\` pour ajouter des objets à ta wishlist.`);
             const newWishlist = await Wishlist.findOne({
                 userID: message.author.id,
                 serverID: message.guild.id
@@ -1009,11 +1011,11 @@ client.on('message', async message => {
             res = res.join(", ");
             var object = 'objets';
             if (newOne.number === 1) var object = 'objet';
-            return message.channel.send(`Les données ont bien été mises à jour.\nCes objets ont été ajoutés à la wishlist : \`${res}\`\nTa wishlist contient ${newOne.number} ${object}.\n\`${prefix}${commandName}\` pour voir ta wishlist.`);
+            return message.channel.send(`Les données ont bien été mises à jour.\nCes objets ont été ajoutés à ta wishlist : \`${res}\`\nCelle-ci contient ${newOne.number} ${object}.\n\`${prefix}${commandName}\` pour l'afficher.`);
         }
 
         else if (obj === 'delete' || obj === 'del') {
-            if (args.length === 0) return message.reply(`la commande \`${prefix}${commandName} ${obj}\` prend au moins un argument.\n\`${prefix}${commandName} ${obj} <Numéro> <Numéro>\` pour supprimer des objets de sa wishlist.`);
+            if (args.length === 0) return message.reply(`la commande \`${prefix}${commandName} ${obj}\` prend au moins un argument.\n\`${prefix}${commandName} ${obj} <Numéro> <Numéro>\` pour supprimer des objets de ta wishlist.`);
             const newWishlist = await Wishlist.findOne({
                 userID: message.author.id,
                 serverID: message.guild.id
@@ -1031,7 +1033,7 @@ client.on('message', async message => {
             }
             for (i = 0; i < args.length; i++) {
                 if (isNaN(parseInt(args[i], 10))) return message.reply(`tous les arguments doivent être des numéros correspondant à la place de l'objet dans la wishlist.`);
-                if (parseInt(args[i], 10) > newWishlist.number) return message.reply(`impossible de supprimer des objets qui n'existent pas dans la wishlist.`);
+                if (parseInt(args[i], 10) > newWishlist.number) return message.reply(`impossible de supprimer des objets qui n'existent pas.`);
             }
             if (args.length > newWishlist.number) return message.reply(`il y a plus d'arguments que d'objets dans la wishlist.`);
             var res = new Array();
@@ -1062,11 +1064,11 @@ client.on('message', async message => {
                     serverID: message.guild.id
                 });
                 message.channel.send(`Les données ont bien été mises à jour.`);
-                return message.reply(`la wishlist est vide. Elle a donc été effacée.`);
+                return message.reply(`ta wishlist est vide. Elle a donc été effacée.`);
             }
             var object = 'objets';
             if (newOne.number === 1) var object = 'objet';
-            return message.channel.send(`Les données ont bien été mises à jour.\nCes objets ont été supprimés de la wishlist : \`${res}\`\nTa wishlist contient ${newOne.number} ${object}.\n\`${prefix}${commandName}\` pour voir ta wishlist.`);
+            return message.channel.send(`Les données ont bien été mises à jour.\nCes objets ont été supprimés de la wishlist : \`${res}\`\nCelle-ci contient ${newOne.number} ${object}.\n\`${prefix}${commandName}\` pour l'afficher.`);
         }
 
         else if (obj === 'help') {
@@ -1074,7 +1076,7 @@ client.on('message', async message => {
                 .setColor(`${color}`)
                 .setTitle(`💸 ${prefix}${commandName}`)
                 newEmbed.addFields(
-                    { name: `**Créer une wishlist :**`, value: `\`${prefix}${commandName} create Objet,Objet\``},
+                    { name: `**Créer une wishlist :**`, value: `\`${prefix}${commandName} create <Objet>,<Objet>\``},
                     { name: `**Supprimer sa wishlist :**`, value: `\`${prefix}${commandName} reset\``},
                     { name: `**Ajouter des objets à sa wishlist :**`, value: `\`${prefix}${commandName} add <Objet>,<Objet>\``},
                     { name: `**Supprimer des objets de sa wishlist :**`, value: `\`${prefix}${commandName} delete <Numéro de l'objet> <Numéro de l'objet>\``},
@@ -1086,7 +1088,7 @@ client.on('message', async message => {
         }
 
         else {
-            if (args.length > 0) return message.reply(`la commande ${prefix}${commandName} n'est pas correctement utilisée.\n\`${prefix}${commandName} help\` pour afficher toutes les commandes.`);
+            if (args.length > 0) return message.reply(`la commande \`${prefix}${commandName}\` n'est pas correctement utilisée.\n\`${prefix}${commandName} help\` pour plus d'informations sur la commande.`);
             var taggedUser = message.mentions.users.first() || message.author;
             if (obj && taggedUser === message.author) {
                 for (i = 0; i < usersList.length; i++) {
@@ -1094,7 +1096,7 @@ client.on('message', async message => {
                     if (usersList[i].username.includes(`${obj}`)) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
                 }
             }
-            if (obj && taggedUser === 'undefined') return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <Membre>\` pour afficher la wishlist d'un.e autre membre.`);
+            if (obj && (taggedUser === 'undefined' || !taggedUser)) return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <Membre>\` pour afficher la wishlist d'un.e autre membre.`);
             const newWishlist = await Wishlist.findOne({
                 userID: taggedUser.id,
                 serverID: message.guild.id
@@ -1120,7 +1122,7 @@ client.on('message', async message => {
                 userID: message.author.id,
                 serverID: message.guild.id
             });
-            if (check) return message.reply(`une liste de crafts existe déjà.\n\`${prefix}${commandName} reset\` pour effacer ta liste de crafts.\n\`${prefix}${commandName} add <Objet>,<Objet>\` pour ajouter des crafts.\n\`${prefix}${commandName} delete <Numéro> <Numéro>\` pour supprimer des crafts.`);
+            if (check) return message.reply(`une liste de crafts existe déjà.\n\`${prefix}${commandName} reset\` pour l'effacer.\n\`${prefix}${commandName} add <Objet>,<Objet>\` pour ajouter des crafts.\n\`${prefix}${commandName} delete <Numéro> <Numéro>\` pour supprimer des crafts.`);
             const parse = message.content.slice(prefix.length).split(/ +/);
             parse.splice(0, 2);
             const str = parse.join(' ');
@@ -1145,7 +1147,7 @@ client.on('message', async message => {
                 console.log(err);
                 return message.reply('les données n\'ont pas pu être mises à jour.');
             }),
-            message.reply(`les données ont bien été mises à jour.\n\`${prefix}${commandName}\` pour voir ta liste de crafts.\n\`${prefix}${commandName} reset\` pour supprimer ta liste.\n\`${prefix}${commandName} add <Objet>,<Objet>\` pour ajouter des crafts.\n\`${prefix}${commandName} delete <Numéro> <Numéro>\` pour supprimer des crafts.`)
+            message.reply(`les données ont bien été mises à jour.\n\`${prefix}${commandName}\` pour voir ta liste de crafts.\n\`${prefix}${commandName} reset\` la supprimer.\n\`${prefix}${commandName} add <Objet>,<Objet>\` pour ajouter des crafts.\n\`${prefix}${commandName} delete <Numéro> <Numéro>\` pour supprimer des crafts.`)
             for (i = 0; i < wish.length; i++) {
                 const update = await Craft.findOneAndUpdate({
                     userID: message.author.id,
@@ -1184,7 +1186,7 @@ client.on('message', async message => {
         }
 
         else if (obj === 'add') {
-            if (args.length === 0) return message.reply(`la commande \`${prefix}${commandName} ${obj}\` prend au moins un argument.\n\`${prefix}${commandName} ${obj} <Objet>,<Objet>\` pour ajouter des objets à sa liste de crafts.`);
+            if (args.length === 0) return message.reply(`la commande \`${prefix}${commandName} ${obj}\` prend au moins un argument.\n\`${prefix}${commandName} ${obj} <Objet>,<Objet>\` pour ajouter des objets à ta liste de crafts.`);
             const newCraft = await Craft.findOne({
                 userID: message.author.id,
                 serverID: message.guild.id
@@ -1237,11 +1239,11 @@ client.on('message', async message => {
             res = res.join(", ");
             var object = 'crafts';
             if (newOne.number === 1) var object = 'craft';
-            return message.channel.send(`Les données ont bien été mises à jour.\nCes crafts ont été ajoutés à la liste : \`${res}\`\nTa liste de crafts contient ${newOne.number} ${object}.\n\`${prefix}${commandName}\` pour voir ta liste de crafts.`)
+            return message.channel.send(`Les données ont bien été mises à jour.\nCes crafts ont été ajoutés à la liste : \`${res}\`\nCelle-ci contient ${newOne.number} ${object}.\n\`${prefix}${commandName}\` pour l'afficher.`)
         }
         
         else if (obj === 'delete' || obj === 'del') {
-            if (args.length === 0) return message.reply(`la commande \`${prefix}${commandName}\` prend au moins un argument.\n\`${prefix}${commandName} ${obj} <Numéro> <Numéro>\` pour supprimer des objets de sa liste de crafts.`);
+            if (args.length === 0) return message.reply(`la commande \`${prefix}${commandName}\` prend au moins un argument.\n\`${prefix}${commandName} ${obj} <Numéro> <Numéro>\` pour supprimer des objets de ta liste de crafts.`);
             const newCraft = await Craft.findOne({
                 userID: message.author.id,
                 serverID: message.guild.id
@@ -1258,8 +1260,8 @@ client.on('message', async message => {
                 j++;
             }
             for (i = 0; i < args.length; i++) {
-                if (isNaN(parseInt(args[i], 10))) return message.reply(`tous les arguments doivent être des numéros correspondant à la place du craft dans la liste.`);
-                if (parseInt(args[i], 10) > newCraft.number || parseInt(args[i], 10) < 1) return message.reply(`impossible de supprimer des objets qui n'existent pas dans la liste de crafts.`);
+                if (isNaN(parseInt(args[i], 10))) return message.reply(`tous les arguments doivent être des numéros correspondant à la place de l'objet dans la liste.`);
+                if (parseInt(args[i], 10) > newCraft.number || parseInt(args[i], 10) < 1) return message.reply(`impossible de supprimer des objets qui n'existent pas.`);
             }
             if (args.length > newCraft.number) return message.reply(`il y a plus d'arguments que de crafts dans la liste.`);
             var res = new Array();
@@ -1294,7 +1296,7 @@ client.on('message', async message => {
             }
             var object = 'crafts';
             if (newOne.number === 1) var object = 'craft';
-            return message.channel.send(`Les données ont bien été mises à jour.\nCes crafts ont été supprimés de la liste : \`${res}\`\nTa liste contient ${newOne.number} ${object}.\n\`${prefix}${commandName}\` pour voir ta liste de crafts.`);
+            return message.channel.send(`Les données ont bien été mises à jour.\nCes crafts ont été supprimés de la liste : \`${res}\`\nCelle-ci contient ${newOne.number} ${object}.\n\`${prefix}${commandName}\` pour l'afficher.`);
         }
 
         else if (obj === 'help') {
@@ -1302,20 +1304,20 @@ client.on('message', async message => {
                 .setColor(`${color}`)
                 .setTitle(`🔨 ${prefix}${commandName}`)
                 newEmbed.addFields(
-                    { name: `**Créer une liste de crafts :**`, value: `\`${prefix}${commandName} create Objet,Objet\``},
+                    { name: `**Créer une liste de crafts :**`, value: `\`${prefix}${commandName} create <Objet>,<Objet>\``},
                     { name: `**Supprimer sa liste de crafts :**`, value: `\`${prefix}${commandName} reset\``},
                     { name: `**Ajouter des objets à sa liste de crafts :**`, value: `\`${prefix}${commandName} add <Objet>,<Objet>\``},
                     { name: `**Supprimer des objets de sa liste de crafts :**`, value: `\`${prefix}${commandName} delete <Numéro de l'objet> <Numéro de l'objet>\``},
                     { name: `**Afficher sa liste de crafts :**`, value: `\`${prefix}${commandName}\``},
                     { name: `**Afficher la liste de crafts d'un membre :**`, value: `\`${prefix}${commandName} <Membre>\``},
-                    { name: `**Afficher la page précisée de tous les gens ayant une liste de crafts :**`, value: `\`${prefix}${commandName} <Page>\``}
+                    { name: `**Afficher toutes les personnes ayant une liste de crafts :**`, value: `\`${prefix}${commandName} <Page>\``}
                     )
                 .setFooter('Bot par Marie#1702');
             return message.channel.send(newEmbed);
         }
 
         else {
-            if (args.length > 0) return message.reply(`la commande ${prefix}${commandName} n'est pas correctement utilisée.\n\`${prefix}${commandName} help\` pour afficher toutes les commandes.`);
+            if (args.length > 0) return message.reply(`la commande ${prefix}${commandName} n'est pas correctement utilisée.\n\`${prefix}${commandName} help\` pour plus d'informations sur la commande.`);
             if (!obj || isNaN(parseInt(obj))) {
                 var taggedUser = message.mentions.users.first() || message.author;
                 if (obj && taggedUser === message.author) {
@@ -1324,7 +1326,7 @@ client.on('message', async message => {
                         if (usersList[i].username.includes(`${obj}`)) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
                     }
                 }
-                if (obj && taggedUser === 'undefined') return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <Membre>\` pour afficher la liste de crafts d'un.e autre membre.\n\`${prefix}${commandName} <Page>\` pour afficher la liste de tous les gens ayant une liste de crafts.`);
+                if (obj && (taggedUser === 'undefined' || !taggedUser)) return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <Membre>\` pour afficher la liste de crafts d'un.e autre membre.\n\`${prefix}${commandName} <Page>\` pour afficher la liste de tous les gens ayant une liste de crafts.`);
                 const newCraft = await Craft.findOne({
                     userID: taggedUser.id,
                     serverID: message.guild.id
@@ -1353,7 +1355,7 @@ client.on('message', async message => {
                 if (res.length === 0) return message.channel.send('Aucune liste de crafts n\'a été ajoutée.');
                 var page = parseInt(obj, 10);
                 if (isNaN(page)) var page = 1;
-                var totalPages = Math.trunc(res.length / 10) + 1;
+                var totalPages = Math.trunc(res.length / 11) + 1;
                 if ((page > totalPages || page < 1) && totalPages === 1) return message.reply(`la page demandée n'existe pas. Essayez \`${prefix}${commandName} 1\``);
                 if (page > totalPages || page < 1) return message.reply(`la page demandée n'existe pas. Cherchez une page entre 1 et ${totalPages}.`);
                 var index = (page * 10) - 10;
@@ -1363,7 +1365,9 @@ client.on('message', async message => {
                 for (i = 0; i < 10; i++) {
                     if (index < res.length) {
                         let user = client.users.cache.get(res[index].userID);
-                        newEmbed.addField(`ac!craft ${user.username}`, `**${index + 1}.** ${user.username}`)
+                        if (!user) var name = 'Utilisateur inconnu';
+                        else var name = user.username;
+                        newEmbed.addField(`${prefix}${commandName} ${name}`, `**${index + 1}.** ${user.username}`)
                         index++;
                     }
                 }
@@ -1371,6 +1375,49 @@ client.on('message', async message => {
                 return message.channel.send(newEmbed);
             }
         }
+    }
+
+    else if (commandName === 'search') {
+        if (!obj) return message.reply(`la commande \`${prefix}${commandName}\` prend un seul argument :\n\`${prefix}${commandName} <Objet>\``);
+        if (obj === 'help') {
+            let newEmbed = new Discord.MessageEmbed()
+                .setColor(`${color}`)
+                .setTitle(`🔍 ${prefix}${commandName}`)
+                .addField(`**Trouver un objet parmi les listes de crafts :**`, `\`${prefix}${commandName} <Objet>\``)
+                .setFooter('Bot par Marie#1702');
+            return message.channel.send(newEmbed);
+        };
+        const parse = message.content.slice(prefix.length).split(/ +/);
+        parse.splice(0, 1);
+        const str = parse.join(' ').toLowerCase();
+        const toParse = await Craft.find({
+            serverID: message.guild.id
+        }).sort();
+        if (!toParse || toParse.length === 0) return message.channel.send(`Aucune liste de craft n'a été trouvée.`);
+        const res = new Array();
+        var k = 0;
+        for (i = 0; i < toParse.length; i++) {
+            var list = toParse[i].list;
+            for (j = 0; j < list.length; j++) {
+                if (list[j].toLowerCase().includes(`${str}`)) {
+                    res[k] = `${toParse[i].userID}:${list[j]}`;
+                    k++;
+                }
+            }
+        }
+        if (res.length === 0) return message.reply(`aucun utilisateur ne possède cet objet.`);
+        let newEmbed = new Discord.MessageEmbed()
+            .setColor(`${color}`)
+            .setTitle(`Qui possède ce craft ?`)
+        for (i = 0; i < res.length; i++) {
+            var divide = res[i].split(':');
+            let user = client.users.cache.get(divide[0]);
+            if (!user) var name = 'Utilisateur inconnu';
+            else var name = user.username;
+            newEmbed.addField(`**${i + 1}.** ${name}`, `${divide[1]}`);
+        }
+        newEmbed.setFooter(`Bot par Marie#1702`);
+        return message.channel.send(newEmbed);
     }
 
     else if (commandName === 'help') {
@@ -1389,8 +1436,8 @@ client.on('message', async message => {
                 { name: '💸 Wishlist', value: `\`create\` \`reset\` \`add\` \`delete\` \`help\``, inline: true },
                 { name: `\u200b`, value: `\u200b` },
                 { name: '🔨 Craft', value: `\`create\` \`reset\` \`add\` \`delete\` \`n° de page\` \`help\``, inline: true },
-                { name: '🎲 Card', value: `\`help\``, inline: true },
-                { name: `\u200b`, value: `\u200b`, inline: true })
+                { name: '🎲 Card', value: `\`leaderboard\`, \`points\`, \`help\``, inline: true },
+                { name: `🔍 Search`, value: `\`help\``, inline: true })
             newEmbed.setFooter(`Bot par Marie#1702`);
             return message.channel.send(newEmbed);
         }
