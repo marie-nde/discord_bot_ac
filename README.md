@@ -32,7 +32,4 @@ Commands :
 - HELP :
   This command displays every command.
 
-Incoming :
-- PNJ feature
-- Kéké feature
-- System of search by object
+Incoming features.
