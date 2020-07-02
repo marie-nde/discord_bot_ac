@@ -24,7 +24,10 @@ Commands :
   This command allows you to create a list of crafts, to reset it, to add or delete crafts, and to display your list or someone else's.
   
 - CARD :
-  This command starts a useless little game.
+  This command starts a little game and allows you to see a leaderboard with the best players.
+  
+- SEARCH :
+  This command allows you to search an item in every list of crafts.
   
 - HELP :
   This command displays every command.
