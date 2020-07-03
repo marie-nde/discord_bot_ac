@@ -13,11 +13,6 @@ const pnjSchema = mongoose.Schema({
     pnj: {
         type: String,
         required: true
-    },
-    createdAt: {
-        type: Date,
-        expires: 10800,
-        default: Date.now
     }
 })
 

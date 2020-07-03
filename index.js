@@ -9,7 +9,7 @@ const Wishlist = require('./models/wishlist');
 const Craft = require('./models/craft');
 const Users = require ('./models/usersList');
 const Card = require ('./models/card');
-// const Pnj = require('./models/pnj');
+const Pnj = require('./models/pnj');
 
 const client = new Discord.Client();
 client.commands = new Discord.Collection();
@@ -62,7 +62,7 @@ client.on('message', async message => {
             _id: mongoose.Types.ObjectId(),
             userID: message.author.id,
             serverID: message.guild.id,
-            username: message.member.displayName.toLowerCase(),
+            username: message.member.displayName.toLowerCase()
         })
         await checkUser.save();
     }
@@ -70,6 +70,19 @@ client.on('message', async message => {
     const usersList = await Users.find({
         serverID: message.guild.id
     }).sort();
+
+    const start = new Date();
+    const hour = start.getHours();
+    if (hour === 24 || (hour > 0 && hour < 6)) {
+        const delAll = await Pnj.find({
+            serverID: message.guild.id
+        });
+        for (i = 0; i < delAll.length; i++) {
+            const dele = await Pnj.findOneAndDelete({
+                userID: delAll[i].userID
+            })
+        }
+    }
 
     if (answered === false && message.author.id === userCard) {
         const checkCard = await Card.findOne({
@@ -1423,6 +1436,79 @@ client.on('message', async message => {
         }
         newEmbed.setFooter(`Bot par Marie#1702`);
         return message.channel.send(newEmbed);
+    }
+
+    else if (commandName === 'pnj') {
+        if (obj === 'create') {
+            if (args.length != 1) return message.reply(`la commande \`${prefix}${commandName} ${obj}\` prend un seul argument.\n\`${prefix}${commandName} ${obj} <Nom du pnj>\``);
+            const perso = args[0].charAt(0).toUpperCase() + args[0].substring(1).toLowerCase();
+            if (perso != 'Sarah' && perso != 'Tiquette' && perso != 'Blaise' && perso != 'Racine' && perso != 'Rounard' && perso != 'Djason' && perso != 'Pollux') return message.reply(`le personnage spécifié est invalide. Les pnj acceptés sont : \`Sarah\`, \`Djason\`, \`Pollux\`, \`Blaise\`, \`Racine\`, \`Rounard\` et \`Tiquette\`.`);
+            const del = await Pnj.findOneAndDelete({
+                userID: message.author.id,
+                serverID: message.guild.id
+            });
+            const newPnj = new Pnj({
+                _id: mongoose.Types.ObjectId(),
+                userID: message.author.id,
+                serverID: message.guild.id,
+                pnj: perso
+            });
+            await newPnj.save();
+            message.channel.send(`Les données ont bien été mises à jour et seront supprimées avant demain à 5h du matin.\n\`${prefix}${commandName}\` pour voir ton pnj.`);
+            if (perso === 'Sarah') var img = "http://image.noelshack.com/fichiers/2020/27/5/1593787155-sarahlogo.png";
+            else if (perso === 'Rounard') var img = "http://image.noelshack.com/fichiers/2020/27/5/1593788312-rounardlogo.png";
+            else if (perso === 'Tiquette') var img = "http://image.noelshack.com/fichiers/2020/27/5/1593788577-tiquettelogo.png";
+            else if (perso === 'Blaise') var img = "http://image.noelshack.com/fichiers/2020/27/5/1593788680-blaiselogo.png";
+            else if (perso === 'Pollux') var img = "http://image.noelshack.com/fichiers/2020/27/5/1593788772-polluxlogo.png";
+            else if (perso === 'Djason') var img = "http://image.noelshack.com/fichiers/2020/27/5/1593788824-djasonlogo.png";
+            else if (perso === 'Racine') var img = "http://image.noelshack.com/fichiers/2020/27/5/1593788881-racinelogo.png";
+            let newEmbed = new Discord.MessageEmbed()
+            .setColor(`${color}`)
+            .setTitle(`Chez ${message.author.username}`)
+            .setThumbnail(`${img}`)
+            .setDescription(`${newPnj.pnj}`)
+            .setFooter(`Bot par Marie#1702`);
+            return message.channel.send(newEmbed);
+        }
+
+        else if (obj === 'reset') {
+            const del = await Pnj.findOneAndDelete({
+                userID: message.author.id,
+                serverID: message.guild.id
+            })
+            if (!del) return message.reply('aucun pnj n\'a été trouvé.');
+            return message.reply('ton pnj a bien été effacé.');
+        }
+
+        else if (obj === 'search') {
+            if (args.length != 1) return message.reply(`la commande \`${prefix}${commandName} ${obj}\` prend un seul argument.\n\`${prefix}${commandName} ${obj} <Nom du pnj>\``);
+            const perso = args[0].charAt(0).toUpperCase() + args[0].substring(1).toLowerCase();
+            if (perso != 'Sarah' && perso != 'Tiquette' && perso != 'Blaise' && perso != 'Racine' && perso != 'Rounard' && perso != 'Djason' && perso != 'Pollux') return message.reply(`le personnage spécifié est invalide. Les pnj acceptés sont : \`Sarah\`, \`Djason\`, \`Pollux\`, \`Blaise\`, \`Racine\`, \`Rounard\` et \`Tiquette\`.`);
+            const allPnj = await Pnj.find({
+                serverID: message.guild.id,
+                pnj: perso
+            }).sort();
+            if (allPnj.length === 0) return message.reply(`aucun utilisateur n'a actuellement ce pnj sur son île.`);
+            if (perso === 'Sarah') var img = "http://image.noelshack.com/fichiers/2020/27/5/1593787155-sarahlogo.png";
+            else if (perso === 'Rounard') var img = "http://image.noelshack.com/fichiers/2020/27/5/1593788312-rounardlogo.png";
+            else if (perso === 'Tiquette') var img = "http://image.noelshack.com/fichiers/2020/27/5/1593788577-tiquettelogo.png";
+            else if (perso === 'Blaise') var img = "http://image.noelshack.com/fichiers/2020/27/5/1593788680-blaiselogo.png";
+            else if (perso === 'Pollux') var img = "http://image.noelshack.com/fichiers/2020/27/5/1593788772-polluxlogo.png";
+            else if (perso === 'Djason') var img = "http://image.noelshack.com/fichiers/2020/27/5/1593788824-djasonlogo.png";
+            else if (perso === 'Racine') var img = "http://image.noelshack.com/fichiers/2020/27/5/1593788881-racinelogo.png";
+            let newEmbed = new Discord.MessageEmbed()
+            .setColor(`${color}`)
+            .setTitle(`Où est ${perso} ?`)
+            .setThumbnail(`${img}`)
+            for (i = 0; i < allPnj.length; i++) {
+                let user = client.users.cache.get(allPnj[i].userID);
+                if (!user) var name = 'Utilisateur inconnu';
+                else var name = user.username;
+                newEmbed.addField(`${perso}`, `**${i + 1}.** Chez ${name}`);
+            }
+            newEmbed.setFooter(`Bot par Marie#1702`);
+            return message.channel.send(newEmbed);
+        }
     }
 
     else if (commandName === 'help') {
