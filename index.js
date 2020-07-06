@@ -10,6 +10,7 @@ const Craft = require('./models/craft');
 const Users = require ('./models/usersList');
 const Card = require ('./models/card');
 const Pnj = require('./models/pnj');
+const Badge = require ('./models/badge');
 
 const client = new Discord.Client();
 client.commands = new Discord.Collection();
@@ -120,7 +121,49 @@ client.on('message', async message => {
             message.reply(`et non, pas cette fois ! J\'ai tiré la carte ${answer} ${emoji} !`);
         }
         answered = true; userCard = ""; answer = "";
-        return;
+    }
+
+    if (message.channel.id === '710850779522793513' || message.channel.id === '709401660832743435' || message.channel.id === '709419639578558555' || message.channel.id === '709419650030764073' || message.channel.id === '709452009031598160' || message.channel.id === '709787337634086993' || message.channel.id === '722062401763016745') {
+        var checkBadge = await Badge.findOne({
+            userID: message.author.id,
+            serverID: message.guild.id
+        });
+        if (!checkBadge) {
+            var checkBadge = new Badge({
+                _id: mongoose.Types.ObjectId(),
+                userID: message.author.id,
+                serverID: message.guild.id,
+            })
+            await checkBadge.save();
+        }
+        if (!message.content.startsWith(prefix) && !message.content.startsWith(prefix2)) {
+            var update = await Badge.findOneAndUpdate({
+                userID: message.author.id,
+                serverID: message.guild.id
+                }, {
+                    $set: { badgeMsg: checkBadge.badgeMsg + 1 }
+                });
+            var update = await Badge.findOne({
+                userID: message.author.id,
+                serverID: message.guild.id
+            });
+            if (update.badgeMsg === 1) var titre = `Marin d'eau douce`;
+            else if (update.badgeMsg === 10) var titre = `Grande timide`;
+            else if (update.badgeMsg === 50) var titre = `Aventurière`;
+            else if (update.badgeMsg === 100) var titre = `Habituée`;
+            else if (update.badgeMsg === 200) var titre = `Miracle de la nature`;
+            else if (update.badgeMsg === 500) var titre = `Impératrice`;
+            else if (update.badgeMsg === 1000) var titre = `Déesse`;
+            if (titre) {
+                var update = await Badge.findOneAndUpdate({
+                    userID: message.author.id,
+                    serverID: message.guild.id
+                    }, {
+                        $push: { allTitles: `${titre}` }
+                    });
+                    message.channel.send(`Félicitations ! Tu as gagné assez de Miles Nook pour débloquer un nouveau badge.\nNouveau titre : **${titre}**.`);
+            }
+        }
     }
     
     if (!message.content.startsWith(prefix) && !message.content.startsWith(prefix2)) return;
@@ -162,7 +205,7 @@ client.on('message', async message => {
             var total = 0;
             for (i = 0; i < newCard.length; i++) {
                 if (newCard[i].points === 0) break;
-                if (total === 10) break;
+                if (total > 9) break;
                 total++;
             }
             if (total === 0) return message.channel.send(`Aucune donnée n'a été trouvée.`);
@@ -188,6 +231,7 @@ client.on('message', async message => {
                     if (usersList[i].username.includes(`${who}`)) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
                 }
             }
+            if (args[0] && message.mentions.users.first() === message.author) var taggedUser = message.author;
             if (args[0] && (taggedUser === 'undefined' || !taggedUser)) return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} ${obj} <Membre>\` pour afficher les points d'un.e autre membre.`);
             const newCard = await Card.findOne({
                 userID: taggedUser.id,
@@ -300,6 +344,7 @@ client.on('message', async message => {
                     if (usersList[i].username.includes(`${obj}`)) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
                 }
             }
+            if (obj && message.mentions.users.first() === message.author) var taggedUser = message.author;
             if (obj && (taggedUser === 'undefined' || !taggedUser)) return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <Membre>\` pour afficher le passeport d'un.e autre membre.`);
             const newData = await Data.findOne({
                 userID: taggedUser.id,
@@ -394,7 +439,8 @@ client.on('message', async message => {
                     if (usersList[i].username.includes(`${obj}`)) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
                 }
             }
-        if (obj && (taggedUser === 'undefined' || !taggedUser)) return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <Membre>\` pour afficher le code ami d'un.e autre membre.\n\`${prefix}${commandName} <Page>\` pour afficher une page des codes ami.`);
+            if (obj && message.mentions.users.first() === message.author) var taggedUser = message.author;
+            if (obj && (taggedUser === 'undefined' || !taggedUser)) return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <Membre>\` pour afficher le code ami d'un.e autre membre.\n\`${prefix}${commandName} <Page>\` pour afficher une page des codes ami.`);
             if (obj && taggedUser === message.author && message.author != message.mentions.users.first()) return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <Membre>\` pour afficher le code ami d'un.e autre membre.\n\`${prefix}${commandName} <Page>\` pour afficher une page des codes ami.`);
             const newData = await Data.findOne({
                 userID: taggedUser.id,
@@ -524,6 +570,7 @@ client.on('message', async message => {
                     if (usersList[i].username.includes(`${obj}`)) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
                 }
             }
+            if (obj && message.mentions.users.first() === message.author) var taggedUser = message.author;
             if (obj && (taggedUser === 'undefined' || !taggedUser)) return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <Membre>\` pour afficher le dodocode d'un.e autre membre.`);
             const newDodo = await Dodo.findOne({
                 userID: taggedUser.id,
@@ -879,6 +926,7 @@ client.on('message', async message => {
                     if (usersList[i].username.includes(`${obj}`)) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
                 }
             }
+            if (obj && message.mentions.users.first() === message.author) var taggedUser = message.author;
             if (obj && (taggedUser === 'undefined' || !taggedUser)) return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <Membre>\` pour afficher la liste d'attente d'un.e autre membre.`);
             const newWlist = await Wlist.findOne({
                 userID: taggedUser.id,
@@ -1112,6 +1160,7 @@ client.on('message', async message => {
                     if (usersList[i].username.includes(`${obj}`)) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
                 }
             }
+            if (obj && message.mentions.users.first() === message.author) var taggedUser = message.author;
             if (obj && (taggedUser === 'undefined' || !taggedUser)) return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <Membre>\` pour afficher la wishlist d'un.e autre membre.`);
             const newWishlist = await Wishlist.findOne({
                 userID: taggedUser.id,
@@ -1344,6 +1393,7 @@ client.on('message', async message => {
                         if (usersList[i].username.includes(`${obj}`)) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
                     }
                 }
+                if (obj && message.mentions.users.first() === message.author) var taggedUser = message.author;
                 if (obj && (taggedUser === 'undefined' || !taggedUser)) return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <Membre>\` pour afficher la liste de crafts d'un.e autre membre.\n\`${prefix}${commandName} <Page>\` pour afficher la liste de tous les gens ayant une liste de crafts.`);
                 const newCraft = await Craft.findOne({
                     userID: taggedUser.id,
@@ -1481,7 +1531,7 @@ client.on('message', async message => {
         }
 
         else if (obj === 'search') {
-            if (args.length != 1) return message.reply(`la commande \`${prefix}${commandName} ${obj}\` prend un seul argument.\n\`${prefix}${commandName} ${obj} <Nom du pnj>\``);
+            if (args.length != 1) return message.reply(`la commande \`${prefix}${commandName} ${obj}\` prend un seul argument.\n\`${prefix}${commandName} ${obj} <Nom du pnj>\` ou \`${prefix}${commandName} ${obj} all\``);
             const perso = args[0].charAt(0).toUpperCase() + args[0].substring(1).toLowerCase();
             if (perso != 'Sarah' && perso != 'Tiquette' && perso != 'Blaise' && perso != 'Racine' && perso != 'Rounard' && perso != 'Djason' && perso != 'Pollux') return message.reply(`le personnage spécifié est invalide. Les pnj acceptés sont : \`Sarah\`, \`Djason\`, \`Pollux\`, \`Blaise\`, \`Racine\`, \`Rounard\` et \`Tiquette\`.`);
             const allPnj = await Pnj.find({
@@ -1498,15 +1548,64 @@ client.on('message', async message => {
             else if (perso === 'Racine') var img = "http://image.noelshack.com/fichiers/2020/27/5/1593788881-racinelogo.png";
             let newEmbed = new Discord.MessageEmbed()
             .setColor(`${color}`)
-            .setTitle(`Où est ${perso} ?`)
+            .setTitle(`🔍 ${perso}`)
             .setThumbnail(`${img}`)
             for (i = 0; i < allPnj.length; i++) {
                 let user = client.users.cache.get(allPnj[i].userID);
                 if (!user) var name = 'Utilisateur inconnu';
                 else var name = user.username;
-                newEmbed.addField(`${perso}`, `**${i + 1}.** Chez ${name}`);
+                newEmbed.addField(`------`, `**${i + 1}.** Chez ${name}`);
             }
             newEmbed.setFooter(`Bot par Marie#1702`);
+            return message.channel.send(newEmbed);
+        }
+
+        else if (obj === 'help') {
+            let newEmbed = new Discord.MessageEmbed()
+                .setColor(`${color}`)
+                .setTitle(`🕴️ ${prefix}${commandName}`)
+                newEmbed.addFields(
+                    { name: `**Créer son PNJ du jour :**`, value: `\`${prefix}${commandName} create <Nom du PNJ>\``},
+                    { name: `**Supprimer son PNJ :**`, value: `\`${prefix}${commandName} reset\``},
+                    { name: `**Chercher un PNJ chez quelqu'un :**`, value: `\`${prefix}${commandName} search <Nom du PNJ>\``},
+                    { name: `**Afficher son PNJ du jour :**`, value: `\`${prefix}${commandName}\``},
+                    { name: `**Afficher le PNJ d'un membre :**`, value: `\`${prefix}${commandName} <Membre>\``}
+                    )
+                .setFooter('Bot par Marie#1702');
+            return message.channel.send(newEmbed);
+        }
+
+        else {
+            if (args.length > 0) return message.reply(`la commande \`${prefix}${commandName}\` n'est pas correctement utilisée.\n\`${prefix}${commandName} help\` pour plus d'informations sur la commande.`);
+            var taggedUser = message.mentions.users.first() || message.author;
+            if (obj && taggedUser === message.author) {
+                for (i = 0; i < usersList.length; i++) {
+                    var taggedUser = 'undefined';
+                    if (usersList[i].username.includes(`${obj}`)) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
+                }
+            }
+            if (obj && message.mentions.users.first() === message.author) var taggedUser = message.author;
+            if (obj && (taggedUser === 'undefined' || !taggedUser)) return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <Membre>\` pour afficher le PNJ d'un.e autre membre.`);
+            const newPnj = await Pnj.findOne({
+                userID: taggedUser.id,
+                serverID: message.guild.id
+            });
+            if (!newPnj && taggedUser === message.author) return message.reply(`aucune donnée n'a été trouvée.\n\`${prefix}${commandName} create <Nom du pnj>\` pour créer un PNJ.`);
+            if (!newPnj && taggedUser != message.author) return message.reply(`aucune donnée n'a été trouvée pour cet utilisateur.`);
+            const perso = newPnj.pnj;
+            if (perso === 'Sarah') var img = "http://image.noelshack.com/fichiers/2020/27/5/1593787155-sarahlogo.png";
+            else if (perso === 'Rounard') var img = "http://image.noelshack.com/fichiers/2020/27/5/1593788312-rounardlogo.png";
+            else if (perso === 'Tiquette') var img = "http://image.noelshack.com/fichiers/2020/27/5/1593788577-tiquettelogo.png";
+            else if (perso === 'Blaise') var img = "http://image.noelshack.com/fichiers/2020/27/5/1593788680-blaiselogo.png";
+            else if (perso === 'Pollux') var img = "http://image.noelshack.com/fichiers/2020/27/5/1593788772-polluxlogo.png";
+            else if (perso === 'Djason') var img = "http://image.noelshack.com/fichiers/2020/27/5/1593788824-djasonlogo.png";
+            else if (perso === 'Racine') var img = "http://image.noelshack.com/fichiers/2020/27/5/1593788881-racinelogo.png";
+            let newEmbed = new Discord.MessageEmbed()
+                .setColor(`${color}`)
+                .setTitle(`PNJ de ${taggedUser.username}`)
+                .setThumbnail(`${img}`)
+                .setDescription(`${perso}`)
+                .setFooter(`Bot par Marie#1702`);
             return message.channel.send(newEmbed);
         }
     }
@@ -1527,8 +1626,13 @@ client.on('message', async message => {
                 { name: '💸 Wishlist', value: `\`create\` \`reset\` \`add\` \`delete\` \`help\``, inline: true },
                 { name: `\u200b`, value: `\u200b` },
                 { name: '🔨 Craft', value: `\`create\` \`reset\` \`add\` \`delete\` \`n° de page\` \`help\``, inline: true },
-                { name: '🎲 Card', value: `\`leaderboard\`, \`points\`, \`help\``, inline: true },
-                { name: `🔍 Search`, value: `\`help\``, inline: true })
+                { name: '🎲 Card', value: `\`leaderboard\` \`points\` \`help\``, inline: true },
+                { name: `🔍 Search`, value: `\`objet\` \`help\``, inline: true },
+                { name: `\u200b`, value: `\u200b` },
+                { name: `🕴️ Pnj`, value: `\`create\` \`reset\` \`search\` \`help\``, inline: true },
+                { name: `\u200b`, value: `\u200b`, inline: true },
+                { name: `\u200b`, value: `\u200b`, inline: true }
+                )
             newEmbed.setFooter(`Bot par Marie#1702`);
             return message.channel.send(newEmbed);
         }
