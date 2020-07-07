@@ -121,6 +121,35 @@ client.on('message', async message => {
             message.reply(`et non, pas cette fois ! J\'ai tiré la carte ${answer} ${emoji} !`);
         }
         answered = true; userCard = ""; answer = "";
+        var newBadge = await Badge.findOne({
+            userID: message.author.id,
+            serverID: message.guild.id
+        })
+        var update = await Badge.findOneAndUpdate({
+            userID: message.author.id,
+            serverID: message.guild.id
+            }, {
+                $set: { badgeCard: newBadge.badgeCard + 1 }
+            });
+        var update = await Badge.findOne({
+            userID: message.author.id,
+            serverID: message.guild.id
+        });
+        if (update.badgeCard === 1) var title = `Petite nature`;
+        else if (update.badgeCard === 10) var title = `Enthousiaste`;
+        else if (update.badgeCard === 25) var title = `Joueuse hors pair`;
+        else if (update.badgeCard === 50) var title = `Gameuse`;
+        else if (update.badgeCard === 100) var title = `Addict aux jeux vidéo`;
+        else if (update.badgeCard === 200) var title = `Challenger`;
+        if (title) {
+            var update = await Badge.findOneAndUpdate({
+                userID: message.author.id,
+                serverID: message.guild.id
+                }, {
+                    $push: { allTitles: `${title}` }
+                });
+                message.channel.send(`Félicitations ! Tu as gagné assez de Miles Nook pour débloquer un nouveau badge.\nNouveau titre : **${title}**.`);
+        }
     }
 
     if (message.channel.id === '710850779522793513' || message.channel.id === '709401660832743435' || message.channel.id === '709419639578558555' || message.channel.id === '709419650030764073' || message.channel.id === '709452009031598160' || message.channel.id === '709787337634086993' || message.channel.id === '722062401763016745') {
@@ -336,7 +365,7 @@ client.on('message', async message => {
         }
         
         else {
-            if (args.length > 0) return message.reply(`la commande ${prefix}${commandName} n'est pas correctement utilisée.\n\`${prefix}${commandName} help\` pour plus d'informations sur la commande.`);
+            if (args.length > 0) return message.reply(`la commande \`${prefix}${commandName}\` n'est pas correctement utilisée.\n\`${prefix}${commandName} help\` pour plus d'informations sur la commande.`);
             var taggedUser = message.mentions.users.first() || message.author;
             if (obj && taggedUser === message.author) {
                 for (i = 0; i < usersList.length; i++) {
@@ -352,18 +381,23 @@ client.on('message', async message => {
             });
             if (!newData && taggedUser != message.author) return message.reply(`aucune donnée n'a été trouvée pour cet utilisateur.`);
             if (!newData) return message.reply(`aucune donnée n\'a été trouvée.\n\`${prefix}${commandName} create <Pseudo> <Ile> <FruitDeBase> <CodeAmi>\` pour créer un passeport.`);
+            var newBadges = await Badge.findOne({
+                userID: taggedUser.id,
+                serverID: message.guild.id
+            });
             let newEmbed = new Discord.MessageEmbed()
                 .setColor(`${color}`)
                 .setTitle(`Passeport de ${taggedUser.username}`)
                 .setThumbnail(taggedUser.displayAvatarURL({ format: "png", dynamic: true }))
-                .addFields(
+            if (newBadges.title) newEmbed.setDescription(`\`${newBadges.title}\``);
+            newEmbed.addFields(
                     { name: 'Pseudo', value: `${newData.pseudo}`, inline: true },
                     { name: 'Nom de l\'île', value: `${newData.ile}`, inline: true },
                     { name: 'Fruit de base', value: `${newData.fruit}` },
                     { name: 'Code ami', value: `${newData.code}`, inline: true },
                 )
-                .addField('Petite bio', `${newData.bio}`, false)
-                .setFooter('Bot par Marie#1702');
+                newEmbed.addField('Petite bio', `${newData.bio}`, false)
+                newEmbed.setFooter('Bot par Marie#1702');
             return message.channel.send(newEmbed);
         }
     }
@@ -514,7 +548,36 @@ client.on('message', async message => {
                 .setThumbnail("https://image.noelshack.com/fichiers/2020/23/7/1591545252-dodoairlineslogo.png")
                 .addField('Raison', `${newDodo.raison}`)
                 .setFooter('Bot par Marie#1702');
-            return message.channel.send(newEmbed);
+            message.channel.send(newEmbed);
+            var newBadge = await Badge.findOne({
+                userID: message.author.id,
+                serverID: message.guild.id
+            })
+            var update = await Badge.findOneAndUpdate({
+                userID: message.author.id,
+                serverID: message.guild.id
+                }, {
+                    $set: { badgeDodo: newBadge.badgeDodo + 1 }
+                });
+            var update = await Badge.findOne({
+                userID: message.author.id,
+                serverID: message.guild.id
+            });
+            if (update.badgeDodo === 1) var titre = `Touriste`;
+            else if (update.badgeDodo === 5) var titre = `Multijoueuse`;
+            else if (update.badgeDodo === 10) var titre = `Maîtresse de maison`;
+            else if (update.badgeDodo === 20) var titre = `Amie conviviale`;
+            else if (update.badgeDodo === 50) var titre = `Fêtarde`;
+            if (titre) {
+                var update = await Badge.findOneAndUpdate({
+                    userID: message.author.id,
+                    serverID: message.guild.id
+                    }, {
+                        $push: { allTitles: `${titre}` }
+                    });
+                    message.channel.send(`Félicitations ! Tu as gagné assez de Miles Nook pour débloquer un nouveau badge.\nNouveau titre : **${titre}**.`);
+            }
+            return;
         }
 
         else if (obj === 'reset') {
@@ -562,7 +625,7 @@ client.on('message', async message => {
         }
 
         else {
-            if (args.length > 0) return message.reply(`la commande ${prefix}${commandName} n'est pas correctement utilisée.\n\`${prefix}${commandName} help\` pour plus d'informations sur la commande.`);
+            if (args.length > 0) return message.reply(`la commande \`${prefix}${commandName}\` n'est pas correctement utilisée.\n\`${prefix}${commandName} help\` pour plus d'informations sur la commande.`);
             var taggedUser = message.mentions.users.first() || message.author;
             if (obj && taggedUser === message.author) {
                 for (i = 0; i < usersList.length; i++) {
@@ -600,7 +663,6 @@ client.on('message', async message => {
                     }
                 }
             }
-            if (args.length > 25) return message.reply(`la liste d'attente ne peut pas comporter plus de 25 membres.`);
             var j = 0;
             var i = 1;
             while (j < args.length - 1) {
@@ -645,16 +707,19 @@ client.on('message', async message => {
                 userID: message.author.id,
                 serverID: message.guild.id
             });
+            const newTitre = new Array();
+                for (i = 0; i < args.length; i++) {
+                    let user = client.users.cache.get(args[i]);
+                    if (!user) break;
+                    newTitre[i] = `**${i + 1}.** ${user.username}`;
+                }
+            const newTitles = newTitre.join('\n\n');
             let newEmbed = new Discord.MessageEmbed()
                 .setColor(`${color}`)
                 .setTitle(`Liste d'attente de ${message.author.username}`)
             if (newDodo) newEmbed.setDescription(`${newDodo.dodocode}`)
-            for (i = 0; i < number; i++) {
-                const user = client.users.cache.get(args[i]);
-                if (!user) break;
-                newEmbed.addField(`${prefix}${commandName} next`, `**${i + 1}.** ${user.username}`);
-            }
-            newEmbed.setFooter('Bot par Marie#1702');
+                .addField(`*${prefix}${commandName} next*`, `${newTitles}`)
+                .setFooter('Bot par Marie#1702');
             message.channel.send(newEmbed);
             const ret = client.users.cache.get(args[0]);
             return message.channel.send(`${ret}, à ton tour !`);
@@ -717,16 +782,19 @@ client.on('message', async message => {
                 serverID: message.guild.id
             });
             const list = newOne.users;
+            const newTitre = new Array();
+                for (i = 0; i < list.length; i++) {
+                    let user = client.users.cache.get(list[i]);
+                    if (!user) break;
+                    newTitre[i] = `**${i + 1}.** ${user.username}`;
+                }
+            const newTitles = newTitre.join('\n\n');
             let newEmbed = new Discord.MessageEmbed()
                 .setColor(`${color}`)
                 .setTitle(`Liste d'attente de ${taggedUser.username}`)
-            if (newDodo) newEmbed.setDescription(`${newDodo.dodocode}`);
-            for (i = 0; i < newOne.number; i++) {
-                var user = client.users.cache.get(list[i]);
-                if (!user) break;
-                newEmbed.addField(`${prefix}${commandName} next`, `**${i + 1}.** ${user.username}`);
-            }
-            newEmbed.setFooter('Bot par Marie#1702');
+            if (newDodo) newEmbed.setDescription(`${newDodo.dodocode}`)
+                .addField(`*${prefix}${commandName} next*`, `${newTitles}`)
+                .setFooter('Bot par Marie#1702');
             message.channel.send(newEmbed);
             var user = client.users.cache.get(newOne.users[0]);
             return message.channel.send(`${user}, à ton tour !`);
@@ -739,7 +807,6 @@ client.on('message', async message => {
                 serverID: message.guild.id
             })
             if (!newWlist) return message.reply(`aucune donnée n'a été trouvée.\n\`${prefix}${commandName} create <Membre> <Membre>\` pour créer une liste d'attente.`);
-            if (args.length + newWlist.number > 25) return message.reply(`la liste d'attente ne peut pas comporter plus de 25 membres.`);
             for (i = 0; i < args.length; i++) {
                 if (getUserFromMention(args[i])) args[i] = getUserFromMention(args[i]);
                 else {
@@ -793,16 +860,19 @@ client.on('message', async message => {
                 serverID: message.guild.id
             })
             const list = newOne.users;
+            const newTitre = new Array();
+                for (i = 0; i < list.length; i++) {
+                    let user = client.users.cache.get(list[i]);
+                    if (!user) break;
+                    newTitre[i] = `**${i + 1}.** ${user.username}`;
+                }
+            const newTitles = newTitre.join('\n\n');
             let newEmbed = new Discord.MessageEmbed()
                 .setColor(`${color}`)
                 .setTitle(`Liste d'attente de ${message.author.username}`)
-            if (newDodo) newEmbed.setDescription(`${newDodo.dodocode}`);
-            for (i = 0; i < newOne.number; i++) {
-                var user = client.users.cache.get(list[i]);
-                if (!user) break;
-                newEmbed.addField(`${prefix}${commandName} next`, `**${i + 1}.** ${user.username}`);
-            }
-            newEmbed.setFooter('Bot par Marie#1702');
+            if (newDodo) newEmbed.setDescription(`${newDodo.dodocode}`)
+                .addField(`*${prefix}${commandName} next*`, `${newTitles}`)
+                .setFooter('Bot par Marie#1702');
             return message.channel.send(newEmbed);
         }
 
@@ -883,16 +953,19 @@ client.on('message', async message => {
                 return message.channel.send(`La dernière personne a été retirée de la liste. La liste d'attente a été effacée.`);
             }
             const list = newOne.users;
+            const newTitre = new Array();
+                for (i = 0; i < list.length; i++) {
+                    let user = client.users.cache.get(list[i]);
+                    if (!user) break;
+                    newTitre[i] = `**${i + 1}.** ${user.username}`;
+                }
+            const newTitles = newTitre.join('\n\n');
             let newEmbed = new Discord.MessageEmbed()
                 .setColor(`${color}`)
                 .setTitle(`Liste d'attente de ${message.author.username}`)
-            if (newDodo) newEmbed.setDescription(`${newDodo.dodocode}`);
-            for (i = 0; i < newOne.number; i++) {
-                var user = client.users.cache.get(list[i]);
-                if (!user) break;
-                newEmbed.addField(`${prefix}${commandName} next`, `**${i + 1}.** ${user.username}`);
-            }
-            newEmbed.setFooter('Bot par Marie#1702');
+            if (newDodo) newEmbed.setDescription(`${newDodo.dodocode}`)
+                .addField(`*${prefix}${commandName} next*`, `${newTitles}`)
+                .setFooter('Bot par Marie#1702');
             message.channel.send(newEmbed);
             var user = client.users.cache.get(list[0]);
             return message.channel.send(`${user}, à ton tour !`);
@@ -918,7 +991,7 @@ client.on('message', async message => {
         }
 
         else {
-            if (args.length > 0) return message.reply(`la commande ${prefix}${commandName} n'est pas correctement utilisée.\n\`${prefix}${commandName} help\` pour plus d'informations sur la commande.`);
+            if (args.length > 0) return message.reply(`la commande \`${prefix}${commandName}\` n'est pas correctement utilisée.\n\`${prefix}${commandName} help\` pour plus d'informations sur la commande.`);
             var taggedUser = message.mentions.users.first() || message.author;
             if (obj && taggedUser === message.author) {
                 for (i = 0; i < usersList.length; i++) {
@@ -939,16 +1012,19 @@ client.on('message', async message => {
                 serverID: message.guild.id
             });
             const list = newWlist.users;
+            const newTitre = new Array();
+                for (i = 0; i < list.length; i++) {
+                    let user = client.users.cache.get(list[i]);
+                    if (!user) break;
+                    newTitre[i] = `**${i + 1}.** ${user.username}`;
+                }
+            const newTitles = newTitre.join('\n\n');
             let newEmbed = new Discord.MessageEmbed()
                 .setColor(`${color}`)
                 .setTitle(`Liste d'attente de ${taggedUser.username}`)
-            if (newDodo) newEmbed.setDescription(`${newDodo.dodocode}`);
-            for (i = 0; i < newWlist.number; i++) {
-                var user = client.users.cache.get(list[i]);
-                if (!user) break;
-                newEmbed.addField(`${prefix}${commandName} next`, `**${i + 1}.** ${user.username}`);
-            }
-            newEmbed.setFooter('Bot par Marie#1702');
+            if (newDodo) newEmbed.setDescription(`${newDodo.dodocode}`)
+                .addField(`*${prefix}${commandName} next*`, `${newTitles}`)
+                .setFooter('Bot par Marie#1702');
             return message.channel.send(newEmbed);
         }
     }
@@ -965,7 +1041,6 @@ client.on('message', async message => {
             parse.splice(0, 2);
             const str = parse.join(' ');
             const wish = str.split(',');
-            if (wish.length > 25) return message.reply(`la wishlist ne peut pas comporter plus de 25 arguments.`);
             var j = 0;
             var i = 1;
             while (j < wish.length - 1) {
@@ -1001,14 +1076,43 @@ client.on('message', async message => {
                 serverID: message.guild.id
             })
             const list = Wish.list;
+            const newTitre = new Array();
+                for (i = 0; i < list.length; i++) {
+                    newTitre[i] = `**${i + 1}.** ${list[i]}`;
+                }
+            const newTitles = newTitre.join('\n');
             let newEmbed = new Discord.MessageEmbed()
                 .setColor(`${color}`)
                 .setTitle(`Wishlist de ${message.author.username}`)
-            for (i = 0; i < Wish.number; i++) {
-                newEmbed.addField(`\u200b`, `**${i + 1}.** ${list[i]}`);
+                .addField(`*Give her what she wants*`, `${newTitles}`)
+                .setFooter('Bot par Marie#1702');
+            message.channel.send(newEmbed);
+            var newBadge = await Badge.findOne({
+                userID: message.author.id,
+                serverID: message.guild.id
+            })
+            var update = await Badge.findOneAndUpdate({
+                userID: message.author.id,
+                serverID: message.guild.id
+                }, {
+                    $set: { badgeWish: newBadge.badgeWish + 1 }
+                });
+            var update = await Badge.findOne({
+                userID: message.author.id,
+                serverID: message.guild.id
+            });
+            if (update.badgeWish === 1) var titre = `Sugar Mommy`;
+            else if (update.badgeWish === 5) var titre = `Enfant capricieuse`;
+            if (titre) {
+                var update = await Badge.findOneAndUpdate({
+                    userID: message.author.id,
+                    serverID: message.guild.id
+                    }, {
+                        $push: { allTitles: `${titre}` }
+                    });
+                    message.channel.send(`Félicitations ! Tu as gagné assez de Miles Nook pour débloquer un nouveau badge.\nNouveau titre : **${titre}**.`);
             }
-            newEmbed.setFooter('Bot par Marie#1702');
-            return message.channel.send(newEmbed);
+            return;
         }
 
         else if (obj === 'reset') {
@@ -1031,7 +1135,6 @@ client.on('message', async message => {
             parse.splice(0, 2);
             const str = parse.join(' ');
             const wish = str.split(',');
-            if (wish.length + newWishlist.number > 25) return message.reply(`la wishlist ne peut pas comporter plus de 25 arguments.`);
             var j = 0;
             var i = 1;
             while (j < wish.length - 1) {
@@ -1169,13 +1272,16 @@ client.on('message', async message => {
             if (!newWishlist && taggedUser === message.author) return message.reply(`aucune donnée n'a été trouvée.\n\`${prefix}${commandName} create <Objet>,<Objet>\` pour créer une wishlist.`);
             if (!newWishlist && taggedUser != message.author) return message.reply(`aucune donnée n'a été trouvée pour cet utilisateur.`);
             const items = newWishlist.list;
+            const newTitre = new Array();
+                for (i = 0; i < items.length; i++) {
+                    newTitre[i] = `**${i + 1}.** ${items[i]}`;
+                }
+            const newTitles = newTitre.join('\n');
             let newEmbed = new Discord.MessageEmbed()
                 .setColor(`${color}`)
                 .setTitle(`Wishlist de ${taggedUser.username}`)
-            for (i = 0; i < newWishlist.number; i++) {
-                newEmbed.addField(`\u200b`, `**${i + 1}.** ${items[i]}`);
-            }
-                newEmbed.setFooter(`Bot par Marie#1702`);
+                .addField(`*Give her what she wants*`, `${newTitles}`)
+                .setFooter(`Bot par Marie#1702`);
             return message.channel.send(newEmbed);
         }
     }
@@ -1192,7 +1298,6 @@ client.on('message', async message => {
             parse.splice(0, 2);
             const str = parse.join(' ');
             const wish = str.split(',');
-            if (wish.length > 25) return message.reply(`la commande \`${prefix}${commandName} ${obj}\` ne prend pas plus de 25 arguments.`);
             var j = 0;
             var i = 1;
             while (j < wish.length - 1) {
@@ -1231,14 +1336,17 @@ client.on('message', async message => {
                 serverID: message.guild.id
             })
             const list = Craftlist.list;
+            const newTitre = new Array();
+                for (i = 0; i < list.length; i++) {
+                    newTitre[i] = `**${i + 1}.** ${list[i]}`;
+                }
+            const newTitles = newTitre.join('\n');
             let newEmbed = new Discord.MessageEmbed()
                 .setColor(`${color}`)
                 .setTitle(`Liste de crafts de ${message.author.username}`)
-            if (newData) newEmbed.setDescription(`Sur ${newData.ile}`);
-            for (i = 0; i < Craftlist.number; i++) {
-                newEmbed.addField(`\u200b`, `**${i + 1}.** ${list[i]}`);
-            }
-            newEmbed.setFooter('Bot par Marie#1702');
+            if (newData) newEmbed.setDescription(`Sur ${newData.ile}`)
+                .addField(`*Take it or leave it*`, `${newTitles}`)
+                .setFooter('Bot par Marie#1702');
             return message.channel.send(newEmbed);
         }
         
@@ -1262,7 +1370,6 @@ client.on('message', async message => {
             parse.splice(0, 2);
             const str = parse.join(' ');
             const wish = str.split(',');
-            if (wish.length + newCraft.number > 25) return message.reply(`la liste de crafts ne peut pas comporter plus de 25 arguments.`);
             var j = 0;
             var i = 1;
             while (j < wish.length - 1) {
@@ -1310,7 +1417,7 @@ client.on('message', async message => {
         }
         
         else if (obj === 'delete' || obj === 'del') {
-            if (args.length === 0) return message.reply(`la commande \`${prefix}${commandName}\` prend au moins un argument.\n\`${prefix}${commandName} ${obj} <Numéro> <Numéro>\` pour supprimer des objets de ta liste de crafts.`);
+            if (args.length === 0) return message.reply(`la commande \`${prefix}${commandName} ${obj}\` prend au moins un argument.\n\`${prefix}${commandName} ${obj} <Numéro> <Numéro>\` pour supprimer des objets de ta liste de crafts.`);
             const newCraft = await Craft.findOne({
                 userID: message.author.id,
                 serverID: message.guild.id
@@ -1384,7 +1491,7 @@ client.on('message', async message => {
         }
 
         else {
-            if (args.length > 0) return message.reply(`la commande ${prefix}${commandName} n'est pas correctement utilisée.\n\`${prefix}${commandName} help\` pour plus d'informations sur la commande.`);
+            if (args.length > 0) return message.reply(`la commande \`${prefix}${commandName}\` n'est pas correctement utilisée.\n\`${prefix}${commandName} help\` pour plus d'informations sur la commande.`);
             if (!obj || isNaN(parseInt(obj))) {
                 var taggedUser = message.mentions.users.first() || message.author;
                 if (obj && taggedUser === message.author) {
@@ -1406,14 +1513,17 @@ client.on('message', async message => {
                     serverID: message.guild.id
                 })
                 const items = newCraft.list;
+                const newTitre = new Array();
+                for (i = 0; i < items.length; i++) {
+                    newTitre[i] = `**${i + 1}.** ${items[i]}`;
+                }
+                const newTitles = newTitre.join('\n');
                 let newEmbed = new Discord.MessageEmbed()
                     .setColor(`${color}`)
                     .setTitle(`Liste de crafts de ${taggedUser.username}`)
-                if (newData) newEmbed.setDescription(`Sur ${newData.ile}`);
-                for (i = 0; i < newCraft.number; i++) {
-                    newEmbed.addField(`\u200b`, `**${i + 1}.** ${items[i]}`);
-                }
-                newEmbed.setFooter(`Bot par Marie#1702`);
+                if (newData) newEmbed.setDescription(`Sur ${newData.ile}`)
+                    .addField(`*Take it or leave it*`, `${newTitles}`)
+                    .setFooter(`Bot par Marie#1702`);
                 return message.channel.send(newEmbed);
             }
             else {
@@ -1485,7 +1595,35 @@ client.on('message', async message => {
             newEmbed.addField(`**${i + 1}.** ${name}`, `${divide[1]}`);
         }
         newEmbed.setFooter(`Bot par Marie#1702`);
-        return message.channel.send(newEmbed);
+        message.channel.send(newEmbed);
+        var newBadge = await Badge.findOne({
+            userID: message.author.id,
+            serverID: message.guild.id
+        })
+        var update = await Badge.findOneAndUpdate({
+            userID: message.author.id,
+            serverID: message.guild.id
+            }, {
+                $set: { badgeSearch: newBadge.badgeSearch + 1 }
+            });
+        var update = await Badge.findOne({
+            userID: message.author.id,
+            serverID: message.guild.id
+        });
+        if (update.badgeSearch === 1) var titre = `Artiste née`;
+        else if (update.badgeSearch === 5) var titre = `Bâtisseuse`;
+        else if (update.badgeSearch === 10) var titre = `Styliste`;
+        else if (update.badgeSearch === 15) var titre = `Architecte d'intérieur`;
+        if (titre) {
+            var update = await Badge.findOneAndUpdate({
+                userID: message.author.id,
+                serverID: message.guild.id
+                }, {
+                    $push: { allTitles: `${titre}` }
+                });
+                message.channel.send(`Félicitations ! Tu as gagné assez de Miles Nook pour débloquer un nouveau badge.\nNouveau titre : **${titre}**.`);
+        }
+        return;
     }
 
     else if (commandName === 'pnj') {
@@ -1610,6 +1748,125 @@ client.on('message', async message => {
         }
     }
 
+    else if (commandName === 'badge') {
+        if (obj === 'titre') {
+            if (args[0]) {
+                var index = parseInt(args[0]);
+                if (isNaN(index) || args.length > 1) return message.reply(`la commande \`${prefix}${commandName} ${obj}\` prend un argument qui correspond au numéro du titre choisi dans la liste.\n\`${prefix}${commandName} ${obj}\` pour voir tous les titres débloqués.`);
+                var newBadges = await Badge.findOne({
+                    userID: message.author.id,
+                    serverID: message.guild.id
+                });
+                if (!newBadges) return message.reply(`aucune donnée n'a été trouvée.`);     
+                for (i = 0; i < newBadges.allTitles.length; i++) {
+                    if (index === i + 1) var newTitle = newBadges.allTitles[i];
+                }
+                if (!newTitle) return message.reply(`titre introuvable.`);
+                var update = await Badge.findOneAndUpdate({
+                    userID: message.author.id,
+                    serverID: message.guild.id
+                    }, {
+                        $set: { title: newTitle }
+                    });
+                return message.reply(`le titre **${newTitle}** a bien été sélectionné sur le passeport.`);
+            }
+            else {
+                var newBadges = await Badge.findOne({
+                    userID: message.author.id,
+                    serverID: message.guild.id
+                });
+                if (!newBadges) return message.reply(`aucune donnée n'a été trouvée.`);
+                if (newBadges.allTitles.length === 0) return message.reply(`aucun titre n'a été débloqué.`);
+                const newTitre = new Array();
+                for (i = 0; i < newBadges.allTitles.length; i++) {
+                    newTitre[i] = `**${i + 1}.** ${newBadges.allTitles[i]}`;
+                }
+                const newTitles = newTitre.join('\n');
+                let newEmbed = new Discord.MessageEmbed()
+                .setColor(`${color}`)
+                .setTitle(`Titres débloqués de ${message.author.username}`)
+                .setDescription(`\`${prefix}${commandName} ${obj} <N° du titre>\` pour l'ajouter au passeport.`)
+                .addField(`\u200b`, `${newTitles}`)
+                .setFooter(`Bot par Marie#1702`)
+                return message.channel.send(newEmbed);
+            }
+        }
+        else if (obj === 'help') {
+            let newEmbed = new Discord.MessageEmbed()
+            .setColor(`${color}`)
+            .setTitle(`🏆 ${prefix}${commandName}`)
+            newEmbed.addFields(
+                { name: `**Afficher ses propres badges :**`, value: `\`${prefix}${commandName}\``},
+                { name: `**Afficher les badges d'un autre membre :**`, value: `\`${prefix}${commandName} <Membre>\``},
+                { name: `**Afficher tous ses titres débloqués :**`, value: `\`${prefix}${commandName} titre\``},
+                { name: `**Choisir un titre à afficher dans le passeport :**`, value: `\`${prefix}${commandName} titre <N° du titre>\``}
+                )
+            .setFooter('Bot par Marie#1702');
+        return message.channel.send(newEmbed);
+        }
+        else {
+            if (args.length > 0) return message.reply(`la commande \`${prefix}${commandName}\` n'est pas correctement utilisée.\n\`${prefix}${commandName} help\` pour plus d'informations sur la commande.`);
+            var taggedUser = message.mentions.users.first() || message.author;
+            if (obj && taggedUser === message.author) {
+                for (i = 0; i < usersList.length; i++) {
+                    var taggedUser = 'undefined';
+                    if (usersList[i].username.includes(`${obj}`)) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
+                }
+            }
+            if (obj && message.mentions.users.first() === message.author) var taggedUser = message.author;
+            if (obj && (taggedUser === 'undefined' || !taggedUser)) return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <Membre>\` pour afficher le PNJ d'un.e autre membre.`);
+            var newBadges = await Badge.findOne({
+                userID: taggedUser.id,
+                serverID: message.guild.id
+            });
+            if (!newBadges && taggedUser === message.author) return message.reply(`aucune donnée n'a été trouvée.\n\`${prefix}${commandName} create <Objet>,<Objet>\` pour créer une liste de crafts.`);
+            if (!newBadges && taggedUser != message.author) return message.reply(`aucune donnée n'a été trouvée pour cet utilisateur.`);
+            var activity = `🔴🔴🔴🔴🔴🔴🔴`;
+            var hotel = `🔴🔴🔴🔴🔴`;
+            var divert = `🔴🔴🔴🔴🔴🔴`;
+            var damidot = `🔴🔴`;
+            var second = `🔴🔴🔴🔴`;
+            if (newBadges.badgeMsg > 0 && newBadges.badgeMsg < 10) var activity = `🟢🔴🔴🔴🔴🔴🔴`;
+            else if (newBadges.badgeMsg > 9 && newBadges.badgeMsg < 50) var activity = `🟢🟢🔴🔴🔴🔴🔴`;
+            else if (newBadges.badgeMsg > 49 && newBadges.badgeMsg < 100) var activity = `🟢🟢🟢🔴🔴🔴🔴`;
+            else if (newBadges.badgeMsg > 99 && newBadges.badgeMsg < 200) var activity = `🟢🟢🟢🟢🔴🔴🔴`;
+            else if (newBadges.badgeMsg > 199 && newBadges.badgeMsg < 500) var activity = `🟢🟢🟢🟢🟢🔴🔴`;
+            else if (newBadges.badgeMsg > 499 && newBadges.badgeMsg < 1000) var activity = `🟢🟢🟢🟢🟢🟢🔴`;
+            else if (newBadges.badgeMsg > 999) var activity = `🟢🟢🟢🟢🟢🟢🟢`;
+            if (newBadges.badgeDodo > 0 && newBadges.badgeDodo < 5) var hotel = `🟢🔴🔴🔴🔴`;
+            else if (newBadges.badgeDodo > 4 && newBadges.badgeDodo < 10) var hotel = `🟢🟢🔴🔴🔴`;
+            else if (newBadges.badgeDodo > 9 && newBadges.badgeDodo < 20) var hotel = `🟢🟢🟢🔴🔴`;
+            else if (newBadges.badgeDodo > 19 && newBadges.badgeDodo < 50) var hotel = `🟢🟢🟢🟢🔴`;
+            else if (newBadges.badgeDodo > 49) var hotel = `🟢🟢🟢🟢🟢`;
+            if (newBadges.badgeCard > 0 && newBadges.badgeCard < 10) var divert = `🟢🔴🔴🔴🔴🔴`;
+            else if (newBadges.badgeCard > 9 && newBadges.badgeCard < 25) var divert = `🟢🟢🔴🔴🔴🔴`;
+            else if (newBadges.badgeCard > 24 && newBadges.badgeCard < 50) var divert = `🟢🟢🟢🔴🔴🔴`;
+            else if (newBadges.badgeCard > 49 && newBadges.badgeCard < 100) var divert = `🟢🟢🟢🟢🔴🔴`;
+            else if (newBadges.badgeCard > 99 && newBadges.badgeCard < 200) var divert = `🟢🟢🟢🟢🟢🔴`;
+            else if (newBadges.badgeCard > 199) var divert = `🟢🟢🟢🟢🟢🟢`;
+            if (newBadges.badgeWish > 0 && newBadges.badgeWish < 5) var damidot = `🟢🔴`;
+            else if (newBadges.badgeWish > 4) var damidot = `🟢🟢`;
+            if (newBadges.badgeSearch > 0 && newBadges.badgeSearch < 5) var second = `🟢🔴🔴🔴`;
+            else if (newBadges.badgeSearch > 4 && newBadges.badgeSearch < 10) var second = `🟢🟢🔴🔴`;
+            else if (newBadges.badgeSearch > 9 && newBadges.badgeSearch < 15) var second = `🟢🟢🟢🔴`;
+            else if (newBadges.badgeSearch > 14) var second = `🟢🟢🟢🟢`;
+            let newEmbed = new Discord.MessageEmbed()
+            .setColor(`${color}`)
+            .setTitle(`🏆 Badges de ${taggedUser.username}`)
+            newEmbed.addFields(
+                { name: `🗣️ Badge Activité`, value: `${activity}`, inline: true },
+                { name: '🛍️ Badge Seconde main', value: `${second}`, inline: true },
+                { name: '🎨 Badge Damidot', value: `${damidot}`, inline: true },
+                { name: `\u200b`, value: `\u200b`, },
+                { name: '🎮 Badge Divertissement', value: `${divert}`, inline: true },
+                { name: '🏡 Badge Hôtellerie', value: `${hotel}`, inline: true },
+                { name: `\u200b`, value: `\u200b`, inline: true }
+                )
+            newEmbed.setFooter(`Bot par Marie#1702`);
+            return message.channel.send(newEmbed);
+        }
+    }
+
     else if (commandName === 'help') {
         let newEmbed = new Discord.MessageEmbed()
             .setColor(`${color}`)
@@ -1630,7 +1887,7 @@ client.on('message', async message => {
                 { name: `🔍 Search`, value: `\`objet\` \`help\``, inline: true },
                 { name: `\u200b`, value: `\u200b` },
                 { name: `🕴️ Pnj`, value: `\`create\` \`reset\` \`search\` \`help\``, inline: true },
-                { name: `\u200b`, value: `\u200b`, inline: true },
+                { name: `🏆 Badge`, value: `\`titre\` \`help\``, inline: true },
                 { name: `\u200b`, value: `\u200b`, inline: true }
                 )
             newEmbed.setFooter(`Bot par Marie#1702`);
