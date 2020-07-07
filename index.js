@@ -148,7 +148,7 @@ client.on('message', async message => {
                 }, {
                     $push: { allTitles: `${title}` }
                 });
-                message.channel.send(`Félicitations ! Tu as gagné assez de Miles Nook pour débloquer un nouveau badge.\nNouveau titre : **${title}**.`);
+                message.channel.send(`Félicitations ${message.author} ! Tu as gagné assez de Miles Nook pour débloquer un nouveau badge.\nNouveau titre : **${title}**.`);
         }
     }
 
@@ -190,7 +190,7 @@ client.on('message', async message => {
                     }, {
                         $push: { allTitles: `${titre}` }
                     });
-                    message.channel.send(`Félicitations ! Tu as gagné assez de Miles Nook pour débloquer un nouveau badge.\nNouveau titre : **${titre}**.`);
+                    message.channel.send(`Félicitations ${message.author} ! Tu as gagné assez de Miles Nook pour débloquer un nouveau badge.\nNouveau titre : **${titre}**.`);
             }
         }
     }
@@ -575,7 +575,7 @@ client.on('message', async message => {
                     }, {
                         $push: { allTitles: `${titre}` }
                     });
-                    message.channel.send(`Félicitations ! Tu as gagné assez de Miles Nook pour débloquer un nouveau badge.\nNouveau titre : **${titre}**.`);
+                    message.channel.send(`Félicitations ${message.author} ! Tu as gagné assez de Miles Nook pour débloquer un nouveau badge.\nNouveau titre : **${titre}**.`);
             }
             return;
         }
@@ -1110,7 +1110,7 @@ client.on('message', async message => {
                     }, {
                         $push: { allTitles: `${titre}` }
                     });
-                    message.channel.send(`Félicitations ! Tu as gagné assez de Miles Nook pour débloquer un nouveau badge.\nNouveau titre : **${titre}**.`);
+                    message.channel.send(`Félicitations ${message.author} ! Tu as gagné assez de Miles Nook pour débloquer un nouveau badge.\nNouveau titre : **${titre}**.`);
             }
             return;
         }
@@ -1621,7 +1621,7 @@ client.on('message', async message => {
                 }, {
                     $push: { allTitles: `${titre}` }
                 });
-                message.channel.send(`Félicitations ! Tu as gagné assez de Miles Nook pour débloquer un nouveau badge.\nNouveau titre : **${titre}**.`);
+                message.channel.send(`Félicitations ${message.author} ! Tu as gagné assez de Miles Nook pour débloquer un nouveau badge.\nNouveau titre : **${titre}**.`);
         }
         return;
     }
