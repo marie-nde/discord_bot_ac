@@ -11,6 +11,8 @@ const Users = require ('./models/usersList');
 const Card = require ('./models/card');
 const Pnj = require('./models/pnj');
 const Badge = require ('./models/badge');
+let cooldown = new Set();
+let cdseconds = 180;
 
 const client = new Discord.Client();
 client.commands = new Discord.Collection();
@@ -74,7 +76,7 @@ client.on('message', async message => {
 
     const start = new Date();
     const hour = start.getHours();
-    if (hour === 24 || (hour > 0 && hour < 6)) {
+    if (hour >= 0 && hour < 6) {
         const delAll = await Pnj.find({
             serverID: message.guild.id
         });
@@ -91,22 +93,16 @@ client.on('message', async message => {
             serverID: message.guild.id
         });
         var toAdd = checkCard.points;
-        number = 4;
+        number = 2;
         var random = Math.floor(Math.random() * (number - 1 + 1)) + 1;
         switch (random) {
-            case 1: answer = "coeur"; break;
-            case 2: answer = "trèfle"; break;
-            case 3: answer = "pique"; break;
-            case 4: answer = "carreau"; break;
+            case 1: answer = "rouge"; break;
+            case 2: answer = "noir"; break;
         }
-        if (message.content.startsWith("coeur")) var num = 1;
-        else if (message.content.startsWith("trèfle")) var num = 2;
-        else if (message.content.startsWith("pique")) var num = 3;
-        else if (message.content.startsWith("carreau")) var num = 4;
-        if (answer === "pique") var emoji = '♠️';
-        else if (answer === "trèfle") var emoji = '♣️';
-        else if (answer === "coeur") var emoji = '❤️';
-        else if (answer === "carreau") var emoji = '♦️';
+        if (message.content.toLowerCase().startsWith("rouge")) var num = 1;
+        else if (message.content.toLowerCase().startsWith("noir")) var num = 2;
+        if (answer === "rouge") var emoji = '🟥';
+        else if (answer === "noir") var emoji = '⬛';
         if (num === random) {
             const update = await Card.findOneAndUpdate({
                 userID: message.author.id,
@@ -118,6 +114,14 @@ client.on('message', async message => {
             message.reply('bonne réponse ! On dirait bien que je vais emménager bientôt !');
         }
         else {
+            var lose = 1;
+            if (toAdd === 0) var lose = 0;
+            const update = await Card.findOneAndUpdate({
+                userID: message.author.id,
+                serverID: message.guild.id
+                }, {
+                    $set: { points: toAdd - lose }
+                });
             message.reply(`et non, pas cette fois ! J\'ai tiré la carte ${answer} ${emoji} !`);
         }
         answered = true; userCard = ""; answer = "";
@@ -217,6 +221,9 @@ client.on('message', async message => {
                 .setTitle(`🎲 ${prefix}${commandName}`)
                 newEmbed.addFields(
                     { name: `**Lancer un mini jeu :**`, value: `\`${prefix}${commandName}\` et suivre les instructions.`},
+                    { name: `**Afficher le leaderboard :**`, value: `\`${prefix}${commandName} leaderboard\``},
+                    { name: `**Afficher ses propres points :**`, value: `\`${prefix}${commandName} point\``},
+                    { name: `**Afficher les points d'un autre membre :**`, value: `\`${prefix}${commandName} point <Membre>\``}
                     )
                 .setFooter('Bot par Marie#1702');
             return message.channel.send(newEmbed);
@@ -276,6 +283,27 @@ client.on('message', async message => {
             return message.channel.send(newEmbed);
         }
 
+        else if (obj === 'reset') {
+            if (message.author.id === "240924015336751104") {
+                const checkCard = await Card.find({
+                    serverID: message.guild.id
+                });
+                if (checkCard.length === 0) return message.channel.send(`Aucune donnée n'a été trouvée.`);
+                for (i = 0; i < checkCard.length; i++) {
+                    var update = await Card.findOneAndUpdate({
+                        userID: checkCard[i].userID,
+                        serverID: message.guild.id
+                    }, {
+                        $set: { points: 0 }
+                    });
+                }
+                return message.channel.send(`Tous les points ont été réinitialisés avec succès.`);
+            }
+            else {
+                return message.reply(`permission refusée.`);
+            }
+        }
+
         else {
             const checkCard = await Card.findOne({
                 userID: message.author.id,
@@ -290,16 +318,23 @@ client.on('message', async message => {
                 });
                 await newCard.save();
             }
-            message.reply('devine quelle carte je tiens dans ma main !\nRéponses possibles : \`carreau\`, \`coeur\`, \`pique\` ou \`trèfle\` !');
+            if (cooldown.has(message.author.id)) {
+                return message.reply(`tu dois attendre 3 min avant de pouvoir réutiliser la commande \`${prefix}${commandName}\`.`);
+            }
+            cooldown.add(message.author.id);
+            message.reply('devine la couleur de la carte que je tiens dans ma main !\nRéponses possibles : \`rouge\` et \`noir\` !');
             answered = false;
             userCard = message.author.id;
+            setTimeout(() => {
+                cooldown.delete(message.author.id);
+            }, cdseconds * 1000);
             return;
         }
     }
 
     else if (commandName === 'tg') {
         if (message.author.id === "240924015336751104") {
-            message.channel.bulkDelete(1, true)
+            message.channel.bulkDelete(1, true);
             return message.channel.send(`tg nn ?`);
         }
         else {
@@ -1344,9 +1379,9 @@ client.on('message', async message => {
             let newEmbed = new Discord.MessageEmbed()
                 .setColor(`${color}`)
                 .setTitle(`Liste de crafts de ${message.author.username}`)
-            if (newData) newEmbed.setDescription(`Sur ${newData.ile}`)
-                .addField(`*Take it or leave it*`, `${newTitles}`)
-                .setFooter('Bot par Marie#1702');
+            if (newData) newEmbed.setDescription(`Sur ${newData.ile}`);
+                newEmbed.addField(`*Take it or leave it*`, `${newTitles}`)
+                newEmbed.setFooter('Bot par Marie#1702');
             return message.channel.send(newEmbed);
         }
         
@@ -1511,19 +1546,19 @@ client.on('message', async message => {
                 const newData = await Data.findOne({
                     userID: taggedUser.id,
                     serverID: message.guild.id
-                })
+                });
                 const items = newCraft.list;
                 const newTitre = new Array();
                 for (i = 0; i < items.length; i++) {
                     newTitre[i] = `**${i + 1}.** ${items[i]}`;
-                }
+                };
                 const newTitles = newTitre.join('\n');
                 let newEmbed = new Discord.MessageEmbed()
                     .setColor(`${color}`)
                     .setTitle(`Liste de crafts de ${taggedUser.username}`)
-                if (newData) newEmbed.setDescription(`Sur ${newData.ile}`)
-                    .addField(`*Take it or leave it*`, `${newTitles}`)
-                    .setFooter(`Bot par Marie#1702`);
+                if (newData) newEmbed.setDescription(`Sur ${newData.ile}`);
+                    newEmbed.addField(`*Take it or leave it*`, `${newTitles}`)
+                    newEmbed.setFooter(`Bot par Marie#1702`);
                 return message.channel.send(newEmbed);
             }
             else {
