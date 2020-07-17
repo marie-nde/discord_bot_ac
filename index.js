@@ -1112,15 +1112,26 @@ client.on('message', async message => {
             })
             const list = Wish.list;
             const newTitre = new Array();
-                for (i = 0; i < list.length; i++) {
-                    newTitre[i] = `**${i + 1}.** ${list[i]}`;
+            for (i = 0; i < list.length; i++) {
+                newTitre[i] = `**${i + 1}.** ${list[i]}`;
+            }
+            if (newTitre.length > 29) {
+                var bonus = new Array();
+                var j = 0;
+                for (i = 30; i < newTitre.length; i++) {
+                    bonus[j] = `${newTitre[i]}`;
+                    j++;
                 }
-            const newTitles = newTitre.join('\n');
+                var newTitles = newTitre.splice(0, 30).join(`\n`);
+                var newBonus = bonus.join(`\n`);
+            }
+            else var newTitles = newTitre.join('\n');
             let newEmbed = new Discord.MessageEmbed()
                 .setColor(`${color}`)
                 .setTitle(`Wishlist de ${message.author.username}`)
                 .addField(`*Give her what she wants*`, `${newTitles}`)
-                .setFooter('Bot par Marie#1702');
+            if (newBonus) newEmbed.addField(`*Page 2*`, `${newBonus}`);
+                newEmbed.setFooter('Bot par Marie#1702');
             message.channel.send(newEmbed);
             var newBadge = await Badge.findOne({
                 userID: message.author.id,
@@ -1273,6 +1284,41 @@ client.on('message', async message => {
             return message.channel.send(`Les données ont bien été mises à jour.\nCes objets ont été supprimés de la wishlist : \`${res}\`\nCelle-ci contient ${newOne.number} ${object}.\n\`${prefix}${commandName}\` pour l'afficher.`);
         }
 
+        else if (obj === 'search') {
+            if (args.length === 0) return message.reply(`la commande \`${prefix}${commandName} ${obj}\` prend au moins un argument :\n\`${prefix}${commandName} ${obj} <Objet>\``);
+            const parse = message.content.slice(prefix.length).split(/ +/);
+            parse.splice(0, 2);
+            const str = parse.join(' ').toLowerCase();
+            const toParse = await Wishlist.find({
+                serverID: message.guild.id
+            }).sort();
+            if (!toParse || toParse.length === 0) return message.channel.send(`Aucune wishlist n'a été trouvée.`);
+            const res = new Array();
+            var k = 0;
+            for (i = 0; i < toParse.length; i++) {
+                var list = toParse[i].list;
+                for (j = 0; j < list.length; j++) {
+                    if (list[j].toLowerCase().includes(`${str}`)) {
+                        res[k] = `${toParse[i].userID}:${list[j]}`;
+                        k++;
+                    }
+                }
+            }
+            if (res.length === 0) return message.reply(`aucun utilisateur ne désire cet objet.`);
+            let newEmbed = new Discord.MessageEmbed()
+                .setColor(`${color}`)
+                .setTitle(`Qui désire cet objet ?`)
+            for (i = 0; i < res.length; i++) {
+                var divide = res[i].split(':');
+                let user = client.users.cache.get(divide[0]);
+                if (!user) var name = 'Utilisateur inconnu';
+                else var name = user.username;
+                newEmbed.addField(`**${i + 1}.** ${name}`, `${divide[1]}`);
+            }
+            newEmbed.setFooter(`Bot par Marie#1702`);
+            message.channel.send(newEmbed);
+        }
+
         else if (obj === 'help') {
             let newEmbed = new Discord.MessageEmbed()
                 .setColor(`${color}`)
@@ -1283,7 +1329,9 @@ client.on('message', async message => {
                     { name: `**Ajouter des objets à sa wishlist :**`, value: `\`${prefix}${commandName} add <Objet>,<Objet>\``},
                     { name: `**Supprimer des objets de sa wishlist :**`, value: `\`${prefix}${commandName} delete <Numéro de l'objet> <Numéro de l'objet>\``},
                     { name: `**Afficher sa wishlist :**`, value: `\`${prefix}${commandName}\``},
-                    { name: `**Afficher la wishlist d'un membre :**`, value: `\`${prefix}${commandName} <Membre>\``}
+                    { name: `**Afficher la wishlist d'un membre :**`, value: `\`${prefix}${commandName} <Membre>\``},
+                    { name: `**Afficher toutes les personnes ayant une wishlist :**`, value: `\`${prefix}${commandName} <Page>\``},
+                    { name: `**Chercher un objet dans toutes les wishlists :**`, value: `\`${prefix}${commandName} search <Objet>\``}
                     )
                 .setFooter('Bot par Marie#1702');
             return message.channel.send(newEmbed);
@@ -1291,6 +1339,7 @@ client.on('message', async message => {
 
         else {
             if (args.length > 0) return message.reply(`la commande \`${prefix}${commandName}\` n'est pas correctement utilisée.\n\`${prefix}${commandName} help\` pour plus d'informations sur la commande.`);
+            if (!obj || isNaN(parseInt(obj))) {
             var taggedUser = message.mentions.users.first() || message.author;
             if (obj && taggedUser === message.author) {
                 for (i = 0; i < usersList.length; i++) {
@@ -1308,16 +1357,54 @@ client.on('message', async message => {
             if (!newWishlist && taggedUser != message.author) return message.reply(`aucune donnée n'a été trouvée pour cet utilisateur.`);
             const items = newWishlist.list;
             const newTitre = new Array();
-                for (i = 0; i < items.length; i++) {
-                    newTitre[i] = `**${i + 1}.** ${items[i]}`;
+            for (i = 0; i < items.length; i++) {
+                newTitre[i] = `**${i + 1}.** ${items[i]}`;
+            }
+            if (newTitre.length > 29) {
+                var bonus = new Array();
+                var j = 0;
+                for (i = 30; i < newTitre.length; i++) {
+                    bonus[j] = `${newTitre[i]}`;
+                    j++;
                 }
-            const newTitles = newTitre.join('\n');
+                var newTitles = newTitre.splice(0, 30).join(`\n`);
+                var newBonus = bonus.join(`\n`);
+            }
+            else var newTitles = newTitre.join('\n');
             let newEmbed = new Discord.MessageEmbed()
-                .setColor(`${color}`)
-                .setTitle(`Wishlist de ${taggedUser.username}`)
-                .addField(`*Give her what she wants*`, `${newTitles}`)
-                .setFooter(`Bot par Marie#1702`);
+            .setColor(`${color}`)
+            .setTitle(`Wishlist de ${taggedUser.username}`)
+            .addField(`*Give her what she wants*`, `${newTitles}`)
+            if (newBonus) newEmbed.addField(`*Page 2*`, `${newBonus}`);
+            newEmbed.setFooter('Bot par Marie#1702');
             return message.channel.send(newEmbed);
+            }
+            else {
+                const res = await Wishlist.find({
+                    serverID: message.guild.id
+                }).sort();
+                if (res.length === 0) return message.channel.send('Aucune wishlist n\'a été ajoutée.');
+                var page = parseInt(obj, 10);
+                if (isNaN(page)) var page = 1;
+                var totalPages = Math.trunc(res.length / 11) + 1;
+                if ((page > totalPages || page < 1) && totalPages === 1) return message.reply(`la page demandée n'existe pas. Essayez \`${prefix}${commandName} 1\``);
+                if (page > totalPages || page < 1) return message.reply(`la page demandée n'existe pas. Cherchez une page entre 1 et ${totalPages}.`);
+                var index = (page * 10) - 10;
+                let newEmbed = new Discord.MessageEmbed()
+                    .setColor(`${color}`)
+                    .setTitle('Qui a une wishlist ?')
+                for (i = 0; i < 10; i++) {
+                    if (index < res.length) {
+                        let user = client.users.cache.get(res[index].userID);
+                        if (!user) var name = 'Utilisateur inconnu';
+                        else var name = user.username;
+                        newEmbed.addField(`${prefix}${commandName} ${name}`, `**${index + 1}.** ${name}`)
+                        index++;
+                    }
+                }
+                newEmbed.setFooter(`Page ${page}/${totalPages}`);
+                return message.channel.send(newEmbed);
+            }
         }
     }
 
@@ -1372,15 +1459,26 @@ client.on('message', async message => {
             })
             const list = Craftlist.list;
             const newTitre = new Array();
-                for (i = 0; i < list.length; i++) {
-                    newTitre[i] = `**${i + 1}.** ${list[i]}`;
+            for (i = 0; i < list.length; i++) {
+                newTitre[i] = `**${i + 1}.** ${list[i]}`;
+            }
+            if (newTitre.length > 29) {
+                var bonus = new Array();
+                var j = 0;
+                for (i = 30; i < newTitre.length; i++) {
+                    bonus[j] = `${newTitre[i]}`;
+                    j++;
                 }
-            const newTitles = newTitre.join('\n');
+                var newTitles = newTitre.splice(0, 30).join(`\n`);
+                var newBonus = bonus.join(`\n`);
+            }
+            else var newTitles = newTitre.join('\n');
             let newEmbed = new Discord.MessageEmbed()
                 .setColor(`${color}`)
                 .setTitle(`Liste de crafts de ${message.author.username}`)
             if (newData) newEmbed.setDescription(`Sur ${newData.ile}`);
                 newEmbed.addField(`*Take it or leave it*`, `${newTitles}`)
+            if (newBonus) newEmbed.addField(`*Page 2*`, `${newBonus}`);
                 newEmbed.setFooter('Bot par Marie#1702');
             return message.channel.send(newEmbed);
         }
@@ -1508,6 +1606,69 @@ client.on('message', async message => {
             return message.channel.send(`Les données ont bien été mises à jour.\nCes crafts ont été supprimés de la liste : \`${res}\`\nCelle-ci contient ${newOne.number} ${object}.\n\`${prefix}${commandName}\` pour l'afficher.`);
         }
 
+        else if (obj === 'search') {
+            if (args.length === 0) return message.reply(`la commande \`${prefix}${commandName} ${obj}\` prend au moins un argument :\n\`${prefix}${commandName} ${obj} <Objet>\``);
+            const parse = message.content.slice(prefix.length).split(/ +/);
+            parse.splice(0, 2);
+            const str = parse.join(' ').toLowerCase();
+            const toParse = await Craft.find({
+                serverID: message.guild.id
+            }).sort();
+            if (!toParse || toParse.length === 0) return message.channel.send(`Aucune liste de craft n'a été trouvée.`);
+            const res = new Array();
+            var k = 0;
+            for (i = 0; i < toParse.length; i++) {
+                var list = toParse[i].list;
+                for (j = 0; j < list.length; j++) {
+                    if (list[j].toLowerCase().includes(`${str}`)) {
+                        res[k] = `${toParse[i].userID}:${list[j]}`;
+                        k++;
+                    }
+                }
+            }
+            if (res.length === 0) return message.reply(`aucun utilisateur ne possède cet objet.`);
+            let newEmbed = new Discord.MessageEmbed()
+                .setColor(`${color}`)
+                .setTitle(`Qui possède ce craft ?`)
+            for (i = 0; i < res.length; i++) {
+                var divide = res[i].split(':');
+                let user = client.users.cache.get(divide[0]);
+                if (!user) var name = 'Utilisateur inconnu';
+                else var name = user.username;
+                newEmbed.addField(`**${i + 1}.** ${name}`, `${divide[1]}`);
+            }
+            newEmbed.setFooter(`Bot par Marie#1702`);
+            message.channel.send(newEmbed);
+            var newBadge = await Badge.findOne({
+                userID: message.author.id,
+                serverID: message.guild.id
+            })
+            var update = await Badge.findOneAndUpdate({
+                userID: message.author.id,
+                serverID: message.guild.id
+                }, {
+                    $set: { badgeSearch: newBadge.badgeSearch + 1 }
+                });
+            var update = await Badge.findOne({
+                userID: message.author.id,
+                serverID: message.guild.id
+            });
+            if (update.badgeSearch === 1) var titre = `Artiste née`;
+            else if (update.badgeSearch === 5) var titre = `Bâtisseuse`;
+            else if (update.badgeSearch === 10) var titre = `Styliste`;
+            else if (update.badgeSearch === 15) var titre = `Architecte d'intérieur`;
+            if (titre) {
+                var update = await Badge.findOneAndUpdate({
+                    userID: message.author.id,
+                    serverID: message.guild.id
+                    }, {
+                        $push: { allTitles: `${titre}` }
+                    });
+                    message.channel.send(`Félicitations ${message.author} ! Tu as gagné assez de Miles Nook pour débloquer un nouveau badge.\nNouveau titre : **${titre}**.`);
+            }
+            return;
+        }
+
         else if (obj === 'help') {
             let newEmbed = new Discord.MessageEmbed()
                 .setColor(`${color}`)
@@ -1519,7 +1680,8 @@ client.on('message', async message => {
                     { name: `**Supprimer des objets de sa liste de crafts :**`, value: `\`${prefix}${commandName} delete <Numéro de l'objet> <Numéro de l'objet>\``},
                     { name: `**Afficher sa liste de crafts :**`, value: `\`${prefix}${commandName}\``},
                     { name: `**Afficher la liste de crafts d'un membre :**`, value: `\`${prefix}${commandName} <Membre>\``},
-                    { name: `**Afficher toutes les personnes ayant une liste de crafts :**`, value: `\`${prefix}${commandName} <Page>\``}
+                    { name: `**Afficher toutes les personnes ayant une liste de crafts :**`, value: `\`${prefix}${commandName} <Page>\``},
+                    { name: `**Chercher un objet dans toutes les listes de crafts :**`, value: `\`${prefix}${commandName} search <Objet>\``}
                     )
                 .setFooter('Bot par Marie#1702');
             return message.channel.send(newEmbed);
@@ -1552,12 +1714,23 @@ client.on('message', async message => {
                 for (i = 0; i < items.length; i++) {
                     newTitre[i] = `**${i + 1}.** ${items[i]}`;
                 };
-                const newTitles = newTitre.join('\n');
+                if (newTitre.length > 29) {
+                    var bonus = new Array();
+                    var j = 0;
+                    for (i = 30; i < newTitre.length; i++) {
+                        bonus[j] = `${newTitre[i]}`;
+                        j++;
+                    }
+                    var newTitles = newTitre.splice(0, 30).join(`\n`);
+                    var newBonus = bonus.join(`\n`);
+                }
+                else var newTitles = newTitre.join('\n');
                 let newEmbed = new Discord.MessageEmbed()
                     .setColor(`${color}`)
                     .setTitle(`Liste de crafts de ${taggedUser.username}`)
                 if (newData) newEmbed.setDescription(`Sur ${newData.ile}`);
                     newEmbed.addField(`*Take it or leave it*`, `${newTitles}`)
+                if (newBonus) newEmbed.addField(`*Page 2*`, `${newBonus}`);
                     newEmbed.setFooter(`Bot par Marie#1702`);
                 return message.channel.send(newEmbed);
             }
@@ -1590,82 +1763,11 @@ client.on('message', async message => {
         }
     }
 
-    else if (commandName === 'search') {
-        if (!obj) return message.reply(`la commande \`${prefix}${commandName}\` prend un seul argument :\n\`${prefix}${commandName} <Objet>\``);
-        if (obj === 'help') {
-            let newEmbed = new Discord.MessageEmbed()
-                .setColor(`${color}`)
-                .setTitle(`🔍 ${prefix}${commandName}`)
-                .addField(`**Trouver un objet parmi les listes de crafts :**`, `\`${prefix}${commandName} <Objet>\``)
-                .setFooter('Bot par Marie#1702');
-            return message.channel.send(newEmbed);
-        };
-        const parse = message.content.slice(prefix.length).split(/ +/);
-        parse.splice(0, 1);
-        const str = parse.join(' ').toLowerCase();
-        const toParse = await Craft.find({
-            serverID: message.guild.id
-        }).sort();
-        if (!toParse || toParse.length === 0) return message.channel.send(`Aucune liste de craft n'a été trouvée.`);
-        const res = new Array();
-        var k = 0;
-        for (i = 0; i < toParse.length; i++) {
-            var list = toParse[i].list;
-            for (j = 0; j < list.length; j++) {
-                if (list[j].toLowerCase().includes(`${str}`)) {
-                    res[k] = `${toParse[i].userID}:${list[j]}`;
-                    k++;
-                }
-            }
-        }
-        if (res.length === 0) return message.reply(`aucun utilisateur ne possède cet objet.`);
-        let newEmbed = new Discord.MessageEmbed()
-            .setColor(`${color}`)
-            .setTitle(`Qui possède ce craft ?`)
-        for (i = 0; i < res.length; i++) {
-            var divide = res[i].split(':');
-            let user = client.users.cache.get(divide[0]);
-            if (!user) var name = 'Utilisateur inconnu';
-            else var name = user.username;
-            newEmbed.addField(`**${i + 1}.** ${name}`, `${divide[1]}`);
-        }
-        newEmbed.setFooter(`Bot par Marie#1702`);
-        message.channel.send(newEmbed);
-        var newBadge = await Badge.findOne({
-            userID: message.author.id,
-            serverID: message.guild.id
-        })
-        var update = await Badge.findOneAndUpdate({
-            userID: message.author.id,
-            serverID: message.guild.id
-            }, {
-                $set: { badgeSearch: newBadge.badgeSearch + 1 }
-            });
-        var update = await Badge.findOne({
-            userID: message.author.id,
-            serverID: message.guild.id
-        });
-        if (update.badgeSearch === 1) var titre = `Artiste née`;
-        else if (update.badgeSearch === 5) var titre = `Bâtisseuse`;
-        else if (update.badgeSearch === 10) var titre = `Styliste`;
-        else if (update.badgeSearch === 15) var titre = `Architecte d'intérieur`;
-        if (titre) {
-            var update = await Badge.findOneAndUpdate({
-                userID: message.author.id,
-                serverID: message.guild.id
-                }, {
-                    $push: { allTitles: `${titre}` }
-                });
-                message.channel.send(`Félicitations ${message.author} ! Tu as gagné assez de Miles Nook pour débloquer un nouveau badge.\nNouveau titre : **${titre}**.`);
-        }
-        return;
-    }
-
     else if (commandName === 'pnj') {
         if (obj === 'create') {
             if (args.length != 1) return message.reply(`la commande \`${prefix}${commandName} ${obj}\` prend un seul argument.\n\`${prefix}${commandName} ${obj} <Nom du pnj>\``);
             const perso = args[0].charAt(0).toUpperCase() + args[0].substring(1).toLowerCase();
-            if (perso != 'Sarah' && perso != 'Tiquette' && perso != 'Blaise' && perso != 'Racine' && perso != 'Rounard' && perso != 'Djason' && perso != 'Pollux') return message.reply(`le personnage spécifié est invalide. Les pnj acceptés sont : \`Sarah\`, \`Djason\`, \`Pollux\`, \`Blaise\`, \`Racine\`, \`Rounard\` et \`Tiquette\`.`);
+            if (perso != 'Sarah' && perso != 'Blaise' && perso != 'Racine' && perso != 'Rounard' && perso != 'Céleste') return message.reply(`le personnage spécifié est invalide. Les pnj acceptés sont : \`Sarah\`, \`Blaise\`, \`Racine\`, \`Rounard\` et \`Céleste\`.`);
             const del = await Pnj.findOneAndDelete({
                 userID: message.author.id,
                 serverID: message.guild.id
@@ -1680,10 +1782,8 @@ client.on('message', async message => {
             message.channel.send(`Les données ont bien été mises à jour et seront supprimées avant demain à 5h du matin.\n\`${prefix}${commandName}\` pour voir ton pnj.`);
             if (perso === 'Sarah') var img = "http://image.noelshack.com/fichiers/2020/27/5/1593787155-sarahlogo.png";
             else if (perso === 'Rounard') var img = "http://image.noelshack.com/fichiers/2020/27/5/1593788312-rounardlogo.png";
-            else if (perso === 'Tiquette') var img = "http://image.noelshack.com/fichiers/2020/27/5/1593788577-tiquettelogo.png";
-            else if (perso === 'Blaise') var img = "http://image.noelshack.com/fichiers/2020/27/5/1593788680-blaiselogo.png";
-            else if (perso === 'Pollux') var img = "http://image.noelshack.com/fichiers/2020/27/5/1593788772-polluxlogo.png";
-            else if (perso === 'Djason') var img = "http://image.noelshack.com/fichiers/2020/27/5/1593788824-djasonlogo.png";
+            else if (perso === 'Céleste') var img = "http://image.noelshack.com/fichiers/2020/29/5/1594995774-celestelogo.png";
+            else if (perso === 'Blaise') var img = "http://image.noelshack.com/fichiers/2020/29/5/1594995865-blaiselogo.png";
             else if (perso === 'Racine') var img = "http://image.noelshack.com/fichiers/2020/27/5/1593788881-racinelogo.png";
             let newEmbed = new Discord.MessageEmbed()
             .setColor(`${color}`)
@@ -1706,7 +1806,7 @@ client.on('message', async message => {
         else if (obj === 'search') {
             if (args.length != 1) return message.reply(`la commande \`${prefix}${commandName} ${obj}\` prend un seul argument.\n\`${prefix}${commandName} ${obj} <Nom du pnj>\` ou \`${prefix}${commandName} ${obj} all\``);
             const perso = args[0].charAt(0).toUpperCase() + args[0].substring(1).toLowerCase();
-            if (perso != 'Sarah' && perso != 'Tiquette' && perso != 'Blaise' && perso != 'Racine' && perso != 'Rounard' && perso != 'Djason' && perso != 'Pollux') return message.reply(`le personnage spécifié est invalide. Les pnj acceptés sont : \`Sarah\`, \`Djason\`, \`Pollux\`, \`Blaise\`, \`Racine\`, \`Rounard\` et \`Tiquette\`.`);
+            if (perso != 'Sarah' && perso != 'Céleste' && perso != 'Blaise' && perso != 'Racine' && perso != 'Rounard') return message.reply(`le personnage spécifié est invalide. Les pnj acceptés sont : \`Sarah\`, \`Blaise\`, \`Racine\`, \`Rounard\` et \`Céleste\`.`);
             const allPnj = await Pnj.find({
                 serverID: message.guild.id,
                 pnj: perso
@@ -1714,10 +1814,8 @@ client.on('message', async message => {
             if (allPnj.length === 0) return message.reply(`aucun utilisateur n'a actuellement ce pnj sur son île.`);
             if (perso === 'Sarah') var img = "http://image.noelshack.com/fichiers/2020/27/5/1593787155-sarahlogo.png";
             else if (perso === 'Rounard') var img = "http://image.noelshack.com/fichiers/2020/27/5/1593788312-rounardlogo.png";
-            else if (perso === 'Tiquette') var img = "http://image.noelshack.com/fichiers/2020/27/5/1593788577-tiquettelogo.png";
-            else if (perso === 'Blaise') var img = "http://image.noelshack.com/fichiers/2020/27/5/1593788680-blaiselogo.png";
-            else if (perso === 'Pollux') var img = "http://image.noelshack.com/fichiers/2020/27/5/1593788772-polluxlogo.png";
-            else if (perso === 'Djason') var img = "http://image.noelshack.com/fichiers/2020/27/5/1593788824-djasonlogo.png";
+            else if (perso === 'Céleste') var img = "http://image.noelshack.com/fichiers/2020/29/5/1594995774-celestelogo.png";
+            else if (perso === 'Blaise') var img = "http://image.noelshack.com/fichiers/2020/29/5/1594995865-blaiselogo.png";
             else if (perso === 'Racine') var img = "http://image.noelshack.com/fichiers/2020/27/5/1593788881-racinelogo.png";
             let newEmbed = new Discord.MessageEmbed()
             .setColor(`${color}`)
@@ -1768,10 +1866,8 @@ client.on('message', async message => {
             const perso = newPnj.pnj;
             if (perso === 'Sarah') var img = "http://image.noelshack.com/fichiers/2020/27/5/1593787155-sarahlogo.png";
             else if (perso === 'Rounard') var img = "http://image.noelshack.com/fichiers/2020/27/5/1593788312-rounardlogo.png";
-            else if (perso === 'Tiquette') var img = "http://image.noelshack.com/fichiers/2020/27/5/1593788577-tiquettelogo.png";
-            else if (perso === 'Blaise') var img = "http://image.noelshack.com/fichiers/2020/27/5/1593788680-blaiselogo.png";
-            else if (perso === 'Pollux') var img = "http://image.noelshack.com/fichiers/2020/27/5/1593788772-polluxlogo.png";
-            else if (perso === 'Djason') var img = "http://image.noelshack.com/fichiers/2020/27/5/1593788824-djasonlogo.png";
+            else if (perso === 'Céleste') var img = "http://image.noelshack.com/fichiers/2020/29/5/1594995774-celestelogo.png";
+            else if (perso === 'Blaise') var img = "http://image.noelshack.com/fichiers/2020/29/5/1594995865-blaiselogo.png";
             else if (perso === 'Racine') var img = "http://image.noelshack.com/fichiers/2020/27/5/1593788881-racinelogo.png";
             let newEmbed = new Discord.MessageEmbed()
                 .setColor(`${color}`)
@@ -1915,14 +2011,14 @@ client.on('message', async message => {
                 { name: `\u200b`, value: `\u200b` },
                 { name: '✈️ Dodocode', value: `\`create\` \`reset\` \`all\` \`<n° de page>\` \`help\``, inline: true },
                 { name: '🎟️ Waitinglist', value: `\`create\` \`reset\` \`next\` \`add\` \`delete\` \`help\``, inline: true },
-                { name: '💸 Wishlist', value: `\`create\` \`reset\` \`add\` \`delete\` \`help\``, inline: true },
+                { name: '💸 Wishlist', value: `\`create\` \`reset\` \`add\` \`delete\` \`n° de page\` \`search\` \`help\``, inline: true },
                 { name: `\u200b`, value: `\u200b` },
-                { name: '🔨 Craft', value: `\`create\` \`reset\` \`add\` \`delete\` \`n° de page\` \`help\``, inline: true },
+                { name: '🔨 Craft', value: `\`create\` \`reset\` \`add\` \`delete\` \`n° de page\` \`search\` \`help\``, inline: true },
                 { name: '🎲 Card', value: `\`leaderboard\` \`points\` \`help\``, inline: true },
-                { name: `🔍 Search`, value: `\`objet\` \`help\``, inline: true },
-                { name: `\u200b`, value: `\u200b` },
                 { name: `🕴️ Pnj`, value: `\`create\` \`reset\` \`search\` \`help\``, inline: true },
+                { name: `\u200b`, value: `\u200b` },
                 { name: `🏆 Badge`, value: `\`titre\` \`help\``, inline: true },
+                { name: `\u200b`, value: `\u200b`, inline: true },
                 { name: `\u200b`, value: `\u200b`, inline: true }
                 )
             newEmbed.setFooter(`Bot par Marie#1702`);
