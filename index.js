@@ -97,12 +97,12 @@ client.on('message', async message => {
         var random = Math.floor(Math.random() * (number - 1 + 1)) + 1;
         switch (random) {
             case 1: answer = "rouge"; break;
-            case 2: answer = "noir"; break;
+            case 2: answer = "noire"; break;
         }
         if (message.content.toLowerCase().startsWith("rouge")) var num = 1;
         else if (message.content.toLowerCase().startsWith("noir")) var num = 2;
         if (answer === "rouge") var emoji = '🟥';
-        else if (answer === "noir") var emoji = '⬛';
+        else if (answer === "noire") var emoji = '⬛';
         if (num === random) {
             const update = await Card.findOneAndUpdate({
                 userID: message.author.id,
@@ -122,7 +122,7 @@ client.on('message', async message => {
                 }, {
                     $set: { points: toAdd - lose }
                 });
-            message.reply(`et non, pas cette fois ! J\'ai tiré la carte ${answer} ${emoji} !`);
+            message.reply(`et non, pas cette fois ! J\'ai tiré une carte ${answer} ${emoji} !`);
         }
         answered = true; userCard = ""; answer = "";
         var newBadge = await Badge.findOne({
@@ -262,9 +262,17 @@ client.on('message', async message => {
             var taggedUser = message.mentions.users.first() || message.author;
             if (args[0]) var who = args[0].toLowerCase();
             if (args[0] && taggedUser === message.author) {
-                for (i = 0; i < usersList.length; i++) {
-                    var taggedUser = 'undefined';
-                    if (usersList[i].username.includes(`${who}`)) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
+                if (who.length < 4) {
+                    for (i = 0; i < usersList.length; i++) {
+                        var taggedUser = 'undefined';
+                        if (usersList[i].username === `${who}`) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
+                    }
+                }
+                if (who.length > 3 || taggedUser === 'undefined') {
+                    for (i = 0; i < usersList.length; i++) {
+                        var taggedUser = 'undefined';
+                        if (usersList[i].username.includes(`${who}`)) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
+                    }
                 }
             }
             if (args[0] && message.mentions.users.first() === message.author) var taggedUser = message.author;
@@ -403,9 +411,17 @@ client.on('message', async message => {
             if (args.length > 0) return message.reply(`la commande \`${prefix}${commandName}\` n'est pas correctement utilisée.\n\`${prefix}${commandName} help\` pour plus d'informations sur la commande.`);
             var taggedUser = message.mentions.users.first() || message.author;
             if (obj && taggedUser === message.author) {
-                for (i = 0; i < usersList.length; i++) {
-                    var taggedUser = 'undefined';
-                    if (usersList[i].username.includes(`${obj}`)) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
+                if (obj.length < 4) {
+                    for (i = 0; i < usersList.length; i++) {
+                        var taggedUser = 'undefined';
+                        if (usersList[i].username === `${obj}`) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
+                    }
+                }
+                if (obj.length > 3 || taggedUser === 'undefined') {
+                    for (i = 0; i < usersList.length; i++) {
+                        var taggedUser = 'undefined';
+                        if (usersList[i].username.includes(`${obj}`)) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
+                    }
                 }
             }
             if (obj && message.mentions.users.first() === message.author) var taggedUser = message.author;
@@ -426,13 +442,14 @@ client.on('message', async message => {
                 .setThumbnail(taggedUser.displayAvatarURL({ format: "png", dynamic: true }))
             if (newBadges.title) newEmbed.setDescription(`\`${newBadges.title}\``);
             newEmbed.addFields(
-                    { name: 'Pseudo', value: `${newData.pseudo}`, inline: true },
-                    { name: 'Nom de l\'île', value: `${newData.ile}`, inline: true },
-                    { name: 'Fruit de base', value: `${newData.fruit}` },
-                    { name: 'Code ami', value: `${newData.code}`, inline: true },
-                )
-                newEmbed.addField('Petite bio', `${newData.bio}`, false)
-                newEmbed.setFooter('Bot par Marie#1702');
+                { name: 'Pseudo', value: `${newData.pseudo}`, inline: true },
+                { name: 'Nom de l\'île', value: `${newData.ile}`, inline: true },
+                { name: 'Fruit de base', value: `${newData.fruit}` },
+                { name: 'Code ami', value: `${newData.code}`, inline: true },
+            )
+            if (newData.onirique) newEmbed.addField(`Code onirique`, `${newData.onirique}`, false);
+            newEmbed.addField('Petite bio', `${newData.bio}`, false)
+            newEmbed.setFooter('Bot par Marie#1702');
             return message.channel.send(newEmbed);
         }
     }
@@ -503,14 +520,21 @@ client.on('message', async message => {
         if (!obj || isNaN(parseInt(obj))) {
             var taggedUser = message.mentions.users.first() || message.author;
             if (obj && taggedUser === message.author) {
-                for (i = 0; i < usersList.length; i++) {
-                    var taggedUser = 'undefined';
-                    if (usersList[i].username.includes(`${obj}`)) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
+                if (obj.length < 4) {
+                    for (i = 0; i < usersList.length; i++) {
+                        var taggedUser = 'undefined';
+                        if (usersList[i].username === `${obj}`) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
+                    }
+                }
+                if (obj.length > 3 || taggedUser === 'undefined') {
+                    for (i = 0; i < usersList.length; i++) {
+                        var taggedUser = 'undefined';
+                        if (usersList[i].username.includes(`${obj}`)) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
+                    }
                 }
             }
             if (obj && message.mentions.users.first() === message.author) var taggedUser = message.author;
             if (obj && (taggedUser === 'undefined' || !taggedUser)) return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <Membre>\` pour afficher le code ami d'un.e autre membre.\n\`${prefix}${commandName} <Page>\` pour afficher une page des codes ami.`);
-            if (obj && taggedUser === message.author && message.author != message.mentions.users.first()) return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <Membre>\` pour afficher le code ami d'un.e autre membre.\n\`${prefix}${commandName} <Page>\` pour afficher une page des codes ami.`);
             const newData = await Data.findOne({
                 userID: taggedUser.id,
                 serverID: message.guild.id
@@ -545,6 +569,112 @@ client.on('message', async message => {
                     if (!user) var name = 'Utilisateur inconnu';
                     else var name = user.username;
                     newEmbed.addField(`${index + 1}. ${name}`, `${res[index].code}`)
+                    index++;
+                }
+            }
+            newEmbed.setFooter(`Page ${page}/${totalPages}`);
+            return message.channel.send(newEmbed);
+        }
+    }
+
+    else if (commandName === 'onirique') {
+        if (obj === 'create') {
+            const oni = args[0];
+            if (!oni || args.length > 1) return message.reply(`la commande \`${prefix}${commandName} ${obj}\` prend un argument :\n\`${prefix}${commandName} ${obj} <Code-onirique>\``);
+            const doc = await Data.findOne({
+                userID: message.author.id,
+                serverID: message.guild.id
+            });
+            if (!doc) return message.reply(`pour ajouter un code onirique, il faut d\'abord créer un passeport :\n\`${prefix}passeport create <Pseudo> <Ile> <FruitDeBase> <CodeAmi>\``)
+            const update = await Data.findOneAndUpdate({
+                userID: message.author.id,
+                serverID: message.guild.id
+            }, {
+                $set: { onirique: `${oni}`}
+            });
+            return message.reply(`les données ont bien été mises à jour.\n\`${prefix}passeport\` pour voir ton passeport.`);
+        }
+
+        else if (obj === 'reset') {
+            const update = await Data.findOneAndUpdate({
+                userID: message.author.id,
+                serverID: message.guild.id
+            }, {
+                $set: { onirique: null }
+            });
+            return message.reply('ton code onirique a bien été effacée.');
+        }
+
+        else if (obj === 'help') {
+            let newEmbed = new Discord.MessageEmbed()
+                .setColor(`${color}`)
+                .setTitle(`☁️ ${prefix}${commandName}`)
+                newEmbed.addFields(
+                    { name: `**Ajouter un code onirique au passeport :**`, value: `\`${prefix}${commandName} create <Code-onirique>\``},
+                    { name: `**Supprimer son code onirique :**`, value: `\`${prefix}${commandName} reset\``},
+                    { name: `**Afficher son code onirique :**`, value: `\`${prefix}${commandName}\``},
+                    { name: `**Afficher le code onirique d'un membre :**`, value: `\`${prefix}${commandName} <Membre>\``},
+                    { name: `**Afficher une page de tous les codes oniriques :**`, value: `\`${prefix}${commandName} <N° de page>\``}
+                )
+                .setFooter('Bot par Marie#1702');
+            return message.channel.send(newEmbed);
+        }
+
+        if (args.length > 0) return message.reply(`la commande \`${prefix}${commandName}\` prend zéro ou un argument.\n\`${prefix}${commandName}\` pour afficher son propre code onirique.\n\`${prefix}${commandName} <Membre>\` ou \`${prefix}${commandName} <Page>\` pour afficher le code onirique d'un.e autre membre.`);
+        if (!obj || isNaN(parseInt(obj))) {
+            var taggedUser = message.mentions.users.first() || message.author;
+            if (obj && taggedUser === message.author) {
+                if (obj.length < 4) {
+                    for (i = 0; i < usersList.length; i++) {
+                        var taggedUser = 'undefined';
+                        if (usersList[i].username === `${obj}`) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
+                    }
+                }
+                if (obj.length > 3 || taggedUser === 'undefined') {
+                    for (i = 0; i < usersList.length; i++) {
+                        var taggedUser = 'undefined';
+                        if (usersList[i].username.includes(`${obj}`)) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
+                    }
+                }
+            }
+            if (obj && message.mentions.users.first() === message.author) var taggedUser = message.author;
+            if (obj && (taggedUser === 'undefined' || !taggedUser)) return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <Membre>\` pour afficher le code onirique d'un.e autre membre.\n\`${prefix}${commandName} <Page>\` pour afficher une page des codes oniriques.`);
+            const newData = await Data.findOne({
+                userID: taggedUser.id,
+                serverID: message.guild.id
+            });
+            if (!newData || !newData.onirique) return message.channel.send(`Aucun code onirique n'a été trouvé pour ${taggedUser.username}.`);
+            let newEmbed = new Discord.MessageEmbed()
+                .setColor(`${color}`)
+                .setTitle(`Code onirique de ${taggedUser.username}`)
+                .setDescription(`${newData.onirique}`)
+                .setThumbnail(taggedUser.displayAvatarURL({ format: "png", dynamic: true }))
+                .setFooter(`Bot par Marie#1702`);
+            return message.channel.send(newEmbed);
+        }
+
+        else {
+            const res = await Data.find({
+                serverID: message.guild.id
+            }).sort();
+            if (res.length === 0) return message.channel.send('Aucun code onirique n\'a été ajouté.');
+            var page = parseInt(obj, 10);
+            if (isNaN(page)) var page = 1;
+            var totalPages = Math.trunc(res.length / 11) + 1;
+            if ((page > totalPages || page < 1) && totalPages === 1) return message.reply(`la page demandée n'existe pas. Essayez \`${prefix}${commandName} 1\``);
+            if (page > totalPages || page < 1) return message.reply(`la page demandée n'existe pas. Cherchez une page entre 1 et ${totalPages}.`);
+            var index = (page * 10) - 10;
+            let newEmbed = new Discord.MessageEmbed()
+                .setColor(`${color}`)
+                .setTitle('Codes oniriques')
+            for (i = 0; i < 10; i++) {
+                if (index < res.length) {
+                    let user = client.users.cache.get(res[index].userID);
+                    if (!user) var name = 'Utilisateur inconnu';
+                    else var name = user.username;
+                    if (!res[index].onirique) var texte = 'Pas de code onirique';
+                    else var texte = res[index].onirique;
+                    newEmbed.addField(`${index + 1}. ${name}`, `${texte}`)
                     index++;
                 }
             }
@@ -663,9 +793,17 @@ client.on('message', async message => {
             if (args.length > 0) return message.reply(`la commande \`${prefix}${commandName}\` n'est pas correctement utilisée.\n\`${prefix}${commandName} help\` pour plus d'informations sur la commande.`);
             var taggedUser = message.mentions.users.first() || message.author;
             if (obj && taggedUser === message.author) {
-                for (i = 0; i < usersList.length; i++) {
-                    var taggedUser = 'undefined';
-                    if (usersList[i].username.includes(`${obj}`)) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
+                if (obj.length < 4) {
+                    for (i = 0; i < usersList.length; i++) {
+                        var taggedUser = 'undefined';
+                        if (usersList[i].username === `${obj}`) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
+                    }
+                }
+                if (obj.length > 3 || taggedUser === 'undefined') {
+                    for (i = 0; i < usersList.length; i++) {
+                        var taggedUser = 'undefined';
+                        if (usersList[i].username.includes(`${obj}`)) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
+                    }
                 }
             }
             if (obj && message.mentions.users.first() === message.author) var taggedUser = message.author;
@@ -743,18 +881,18 @@ client.on('message', async message => {
                 serverID: message.guild.id
             });
             const newTitre = new Array();
-                for (i = 0; i < args.length; i++) {
-                    let user = client.users.cache.get(args[i]);
-                    if (!user) break;
-                    newTitre[i] = `**${i + 1}.** ${user.username}`;
-                }
+            for (i = 0; i < args.length; i++) {
+                let user = client.users.cache.get(args[i]);
+                if (!user) break;
+                newTitre[i] = `**${i + 1}.** ${user.username}`;
+            }
             const newTitles = newTitre.join('\n\n');
             let newEmbed = new Discord.MessageEmbed()
                 .setColor(`${color}`)
                 .setTitle(`Liste d'attente de ${message.author.username}`)
-            if (newDodo) newEmbed.setDescription(`${newDodo.dodocode}`)
-                .addField(`*${prefix}${commandName} next*`, `${newTitles}`)
-                .setFooter('Bot par Marie#1702');
+            if (newDodo) newEmbed.setDescription(`${newDodo.dodocode}`);
+            newEmbed.addField(`*${prefix}${commandName} next*`, `${newTitles}`)
+            newEmbed.setFooter('Bot par Marie#1702');
             message.channel.send(newEmbed);
             const ret = client.users.cache.get(args[0]);
             return message.channel.send(`${ret}, à ton tour !`);
@@ -773,9 +911,17 @@ client.on('message', async message => {
             if (args.length > 1) return message.reply(`la commande \`${prefix}${commandName} ${obj}\` prend zéro ou un argument.\n\`${prefix}${commandName} ${obj}\` pour passer à la personne suivante dans ta liste d'attente.\n\`${prefix}${commandName} ${obj} <Membre>\` pour passer à la personne suivante dans la liste d'attente d'un.e autre membre.`);
             var taggedUser = message.mentions.users.first() || message.author;
             if (args[0] && taggedUser === message.author) {
-                for (i = 0; i < usersList.length; i++) {
-                    var taggedUser = 'undefined';
-                    if (usersList[i].username.includes(`${args[0].toLowerCase()}`)) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
+                if (args[0].length < 4) {
+                    for (i = 0; i < usersList.length; i++) {
+                        var taggedUser = 'undefined';
+                        if (usersList[i].username === `${args[0].toLowerCase()}`) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
+                    }
+                }
+                if (args[0].length > 3 || taggedUser === 'undefined') {
+                    for (i = 0; i < usersList.length; i++) {
+                        var taggedUser = 'undefined';
+                        if (usersList[i].username.includes(`${args[0].toLowerCase()}`)) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
+                    }
                 }
             }
             if (args[0] && (taggedUser === 'undefined' || !taggedUser)) return message.reply(`utilisateur inconnu.\n\`${prefix}${commandName} <Membre>\` pour afficher la liste d'attente d'un.e autre membre.`);
@@ -827,9 +973,9 @@ client.on('message', async message => {
             let newEmbed = new Discord.MessageEmbed()
                 .setColor(`${color}`)
                 .setTitle(`Liste d'attente de ${taggedUser.username}`)
-            if (newDodo) newEmbed.setDescription(`${newDodo.dodocode}`)
-                .addField(`*${prefix}${commandName} next*`, `${newTitles}`)
-                .setFooter('Bot par Marie#1702');
+            if (newDodo) newEmbed.setDescription(`${newDodo.dodocode}`);
+            newEmbed.addField(`*${prefix}${commandName} next*`, `${newTitles}`)
+            newEmbed.setFooter('Bot par Marie#1702');
             message.channel.send(newEmbed);
             var user = client.users.cache.get(newOne.users[0]);
             return message.channel.send(`${user}, à ton tour !`);
@@ -905,9 +1051,9 @@ client.on('message', async message => {
             let newEmbed = new Discord.MessageEmbed()
                 .setColor(`${color}`)
                 .setTitle(`Liste d'attente de ${message.author.username}`)
-            if (newDodo) newEmbed.setDescription(`${newDodo.dodocode}`)
-                .addField(`*${prefix}${commandName} next*`, `${newTitles}`)
-                .setFooter('Bot par Marie#1702');
+            if (newDodo) newEmbed.setDescription(`${newDodo.dodocode}`);
+            newEmbed.addField(`*${prefix}${commandName} next*`, `${newTitles}`)
+            newEmbed.setFooter('Bot par Marie#1702');
             return message.channel.send(newEmbed);
         }
 
@@ -999,8 +1145,8 @@ client.on('message', async message => {
                 .setColor(`${color}`)
                 .setTitle(`Liste d'attente de ${message.author.username}`)
             if (newDodo) newEmbed.setDescription(`${newDodo.dodocode}`)
-                .addField(`*${prefix}${commandName} next*`, `${newTitles}`)
-                .setFooter('Bot par Marie#1702');
+            newEmbed.addField(`*${prefix}${commandName} next*`, `${newTitles}`)
+            newEmbed.setFooter('Bot par Marie#1702');
             message.channel.send(newEmbed);
             var user = client.users.cache.get(list[0]);
             return message.channel.send(`${user}, à ton tour !`);
@@ -1029,9 +1175,17 @@ client.on('message', async message => {
             if (args.length > 0) return message.reply(`la commande \`${prefix}${commandName}\` n'est pas correctement utilisée.\n\`${prefix}${commandName} help\` pour plus d'informations sur la commande.`);
             var taggedUser = message.mentions.users.first() || message.author;
             if (obj && taggedUser === message.author) {
-                for (i = 0; i < usersList.length; i++) {
-                    var taggedUser = 'undefined';
-                    if (usersList[i].username.includes(`${obj}`)) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
+                if (obj.length < 4) {
+                    for (i = 0; i < usersList.length; i++) {
+                        var taggedUser = 'undefined';
+                        if (usersList[i].username === `${obj.toLowerCase()}`) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
+                    }
+                }
+                if (obj.length > 3 || taggedUser === 'undefined') {
+                    for (i = 0; i < usersList.length; i++) {
+                        var taggedUser = 'undefined';
+                        if (usersList[i].username.includes(`${obj.toLowerCase()}`)) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
+                    }
                 }
             }
             if (obj && message.mentions.users.first() === message.author) var taggedUser = message.author;
@@ -1057,9 +1211,9 @@ client.on('message', async message => {
             let newEmbed = new Discord.MessageEmbed()
                 .setColor(`${color}`)
                 .setTitle(`Liste d'attente de ${taggedUser.username}`)
-            if (newDodo) newEmbed.setDescription(`${newDodo.dodocode}`)
-                .addField(`*${prefix}${commandName} next*`, `${newTitles}`)
-                .setFooter('Bot par Marie#1702');
+            if (newDodo) newEmbed.setDescription(`${newDodo.dodocode}`);
+            newEmbed.addField(`*${prefix}${commandName} next*`, `${newTitles}`)
+            newEmbed.setFooter('Bot par Marie#1702');
             return message.channel.send(newEmbed);
         }
     }
@@ -1115,15 +1269,28 @@ client.on('message', async message => {
             for (i = 0; i < list.length; i++) {
                 newTitre[i] = `**${i + 1}.** ${list[i]}`;
             }
-            if (newTitre.length > 29) {
+            if (newTitre.length > 19) {
                 var bonus = new Array();
                 var j = 0;
-                for (i = 30; i < newTitre.length; i++) {
+                if (newTitre.length < 40) var len = newTitre.length;
+                else var len = 40;
+                for (i = 20; i < len; i++) {
                     bonus[j] = `${newTitre[i]}`;
                     j++;
                 }
-                var newTitles = newTitre.splice(0, 30).join(`\n`);
+                if (newTitre.length > 39) {
+                    var bonus2 = new Array();
+                    var j = 0;
+                    if (newTitre.length < 60) var len = newTitre.length;
+                    else var len = 60;
+                    for (i = 40; i < len; i++) {
+                        bonus2[j] = `${newTitre[i]}`;
+                        j++;
+                    }
+                }
+                var newTitles = newTitre.splice(0, 20).join(`\n`);
                 var newBonus = bonus.join(`\n`);
+                var newBonus2 = bonus2.join(`\n`);
             }
             else var newTitles = newTitre.join('\n');
             let newEmbed = new Discord.MessageEmbed()
@@ -1131,6 +1298,7 @@ client.on('message', async message => {
                 .setTitle(`Wishlist de ${message.author.username}`)
                 .addField(`*Give her what she wants*`, `${newTitles}`)
             if (newBonus) newEmbed.addField(`*Page 2*`, `${newBonus}`);
+            if (newBonus2) newEmbed.addField(`*Page 3*`, `${newBonus2}`);
                 newEmbed.setFooter('Bot par Marie#1702');
             message.channel.send(newEmbed);
             var newBadge = await Badge.findOne({
@@ -1342,9 +1510,17 @@ client.on('message', async message => {
             if (!obj || isNaN(parseInt(obj))) {
             var taggedUser = message.mentions.users.first() || message.author;
             if (obj && taggedUser === message.author) {
-                for (i = 0; i < usersList.length; i++) {
-                    var taggedUser = 'undefined';
-                    if (usersList[i].username.includes(`${obj}`)) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
+                if (obj.length < 4) {
+                    for (i = 0; i < usersList.length; i++) {
+                        var taggedUser = 'undefined';
+                        if (usersList[i].username === `${obj.toLowerCase()}`) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
+                    }
+                }
+                if (obj.length > 3 || taggedUser === 'undefined') {
+                    for (i = 0; i < usersList.length; i++) {
+                        var taggedUser = 'undefined';
+                        if (usersList[i].username.includes(`${obj.toLowerCase()}`)) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
+                    }
                 }
             }
             if (obj && message.mentions.users.first() === message.author) var taggedUser = message.author;
@@ -1360,15 +1536,28 @@ client.on('message', async message => {
             for (i = 0; i < items.length; i++) {
                 newTitre[i] = `**${i + 1}.** ${items[i]}`;
             }
-            if (newTitre.length > 29) {
+            if (newTitre.length > 19) {
                 var bonus = new Array();
                 var j = 0;
-                for (i = 30; i < newTitre.length; i++) {
+                if (newTitre.length < 40) var len = newTitre.length;
+                else var len = 40;
+                for (i = 20; i < len; i++) {
                     bonus[j] = `${newTitre[i]}`;
                     j++;
                 }
-                var newTitles = newTitre.splice(0, 30).join(`\n`);
+                if (newTitre.length > 39) {
+                    var bonus2 = new Array();
+                    var j = 0;
+                    if (newTitre.length < 60) var len = newTitre.length;
+                    else var len = 60;
+                    for (i = 40; i < len; i++) {
+                        bonus2[j] = `${newTitre[i]}`;
+                        j++;
+                    }
+                }
+                var newTitles = newTitre.splice(0, 20).join(`\n`);
                 var newBonus = bonus.join(`\n`);
+                var newBonus2 = bonus2.join(`\n`);
             }
             else var newTitles = newTitre.join('\n');
             let newEmbed = new Discord.MessageEmbed()
@@ -1376,9 +1565,11 @@ client.on('message', async message => {
             .setTitle(`Wishlist de ${taggedUser.username}`)
             .addField(`*Give her what she wants*`, `${newTitles}`)
             if (newBonus) newEmbed.addField(`*Page 2*`, `${newBonus}`);
+            if (newBonus2) newEmbed.addField(`*Page 3*`, `${newBonus2}`);
             newEmbed.setFooter('Bot par Marie#1702');
             return message.channel.send(newEmbed);
             }
+            
             else {
                 const res = await Wishlist.find({
                     serverID: message.guild.id
@@ -1462,15 +1653,28 @@ client.on('message', async message => {
             for (i = 0; i < list.length; i++) {
                 newTitre[i] = `**${i + 1}.** ${list[i]}`;
             }
-            if (newTitre.length > 29) {
+            if (newTitre.length > 19) {
                 var bonus = new Array();
                 var j = 0;
-                for (i = 30; i < newTitre.length; i++) {
+                if (newTitre.length < 40) var len = newTitre.length;
+                else var len = 40;
+                for (i = 20; i < len; i++) {
                     bonus[j] = `${newTitre[i]}`;
                     j++;
                 }
-                var newTitles = newTitre.splice(0, 30).join(`\n`);
+                if (newTitre.length > 39) {
+                    var bonus2 = new Array();
+                    var j = 0;
+                    if (newTitre.length < 60) var len = newTitre.length;
+                    else var len = 60;
+                    for (i = 40; i < len; i++) {
+                        bonus2[j] = `${newTitre[i]}`;
+                        j++;
+                    }
+                }
+                var newTitles = newTitre.splice(0, 20).join(`\n`);
                 var newBonus = bonus.join(`\n`);
+                var newBonus2 = bonus2.join(`\n`);
             }
             else var newTitles = newTitre.join('\n');
             let newEmbed = new Discord.MessageEmbed()
@@ -1479,6 +1683,7 @@ client.on('message', async message => {
             if (newData) newEmbed.setDescription(`Sur ${newData.ile}`);
                 newEmbed.addField(`*Take it or leave it*`, `${newTitles}`)
             if (newBonus) newEmbed.addField(`*Page 2*`, `${newBonus}`);
+            if (newBonus2) newEmbed.addField(`*Page 3*`, `${newBonus2}`);
                 newEmbed.setFooter('Bot par Marie#1702');
             return message.channel.send(newEmbed);
         }
@@ -1692,9 +1897,17 @@ client.on('message', async message => {
             if (!obj || isNaN(parseInt(obj))) {
                 var taggedUser = message.mentions.users.first() || message.author;
                 if (obj && taggedUser === message.author) {
-                    for (i = 0; i < usersList.length; i++) {
-                        var taggedUser = 'undefined';
-                        if (usersList[i].username.includes(`${obj}`)) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
+                    if (obj.length < 4) {
+                        for (i = 0; i < usersList.length; i++) {
+                            var taggedUser = 'undefined';
+                            if (usersList[i].username === `${obj.toLowerCase()}`) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
+                        }
+                    }
+                    if (obj.length > 3 || taggedUser === 'undefined') {
+                        for (i = 0; i < usersList.length; i++) {
+                            var taggedUser = 'undefined';
+                            if (usersList[i].username.includes(`${obj.toLowerCase()}`)) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
+                        }
                     }
                 }
                 if (obj && message.mentions.users.first() === message.author) var taggedUser = message.author;
@@ -1714,15 +1927,28 @@ client.on('message', async message => {
                 for (i = 0; i < items.length; i++) {
                     newTitre[i] = `**${i + 1}.** ${items[i]}`;
                 };
-                if (newTitre.length > 29) {
+                if (newTitre.length > 19) {
                     var bonus = new Array();
                     var j = 0;
-                    for (i = 30; i < newTitre.length; i++) {
+                    if (newTitre.length < 40) var len = newTitre.length;
+                    else var len = 40;
+                    for (i = 20; i < len; i++) {
                         bonus[j] = `${newTitre[i]}`;
                         j++;
                     }
-                    var newTitles = newTitre.splice(0, 30).join(`\n`);
+                    if (newTitre.length > 39) {
+                        var bonus2 = new Array();
+                        var j = 0;
+                        if (newTitre.length < 60) var len = newTitre.length;
+                        else var len = 60;
+                        for (i = 40; i < len; i++) {
+                            bonus2[j] = `${newTitre[i]}`;
+                            j++;
+                        }
+                    }
+                    var newTitles = newTitre.splice(0, 20).join(`\n`);
                     var newBonus = bonus.join(`\n`);
+                    var newBonus2 = bonus2.join(`\n`);
                 }
                 else var newTitles = newTitre.join('\n');
                 let newEmbed = new Discord.MessageEmbed()
@@ -1731,7 +1957,8 @@ client.on('message', async message => {
                 if (newData) newEmbed.setDescription(`Sur ${newData.ile}`);
                     newEmbed.addField(`*Take it or leave it*`, `${newTitles}`)
                 if (newBonus) newEmbed.addField(`*Page 2*`, `${newBonus}`);
-                    newEmbed.setFooter(`Bot par Marie#1702`);
+                if (newBonus2) newEmbed.addField(`*Page 3*`, `${newBonus2}`);
+                newEmbed.setFooter(`Bot par Marie#1702`);
                 return message.channel.send(newEmbed);
             }
             else {
@@ -1850,9 +2077,17 @@ client.on('message', async message => {
             if (args.length > 0) return message.reply(`la commande \`${prefix}${commandName}\` n'est pas correctement utilisée.\n\`${prefix}${commandName} help\` pour plus d'informations sur la commande.`);
             var taggedUser = message.mentions.users.first() || message.author;
             if (obj && taggedUser === message.author) {
-                for (i = 0; i < usersList.length; i++) {
-                    var taggedUser = 'undefined';
-                    if (usersList[i].username.includes(`${obj}`)) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
+                if (obj.length < 4) {
+                    for (i = 0; i < usersList.length; i++) {
+                        var taggedUser = 'undefined';
+                        if (usersList[i].username === `${obj.toLowerCase()}`) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
+                    }
+                }
+                if (obj.length > 3 || taggedUser === 'undefined') {
+                    for (i = 0; i < usersList.length; i++) {
+                        var taggedUser = 'undefined';
+                        if (usersList[i].username.includes(`${obj.toLowerCase()}`)) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
+                    }
                 }
             }
             if (obj && message.mentions.users.first() === message.author) var taggedUser = message.author;
@@ -1939,9 +2174,17 @@ client.on('message', async message => {
             if (args.length > 0) return message.reply(`la commande \`${prefix}${commandName}\` n'est pas correctement utilisée.\n\`${prefix}${commandName} help\` pour plus d'informations sur la commande.`);
             var taggedUser = message.mentions.users.first() || message.author;
             if (obj && taggedUser === message.author) {
-                for (i = 0; i < usersList.length; i++) {
-                    var taggedUser = 'undefined';
-                    if (usersList[i].username.includes(`${obj}`)) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
+                if (obj.length < 4) {
+                    for (i = 0; i < usersList.length; i++) {
+                        var taggedUser = 'undefined';
+                        if (usersList[i].username === `${obj.toLowerCase()}`) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
+                    }
+                }
+                if (obj.length > 3 || taggedUser === 'undefined') {
+                    for (i = 0; i < usersList.length; i++) {
+                        var taggedUser = 'undefined';
+                        if (usersList[i].username.includes(`${obj.toLowerCase()}`)) { var taggedUser = client.users.cache.get(usersList[i].userID); break; }
+                    }
                 }
             }
             if (obj && message.mentions.users.first() === message.author) var taggedUser = message.author;
@@ -2007,18 +2250,18 @@ client.on('message', async message => {
                 { name: `Exemple : \`${prefix}passeport ${commandName}\``, value: `\u200b` },
                 { name: '📇 Passeport', value: `\`create\` \`reset\` \`help\``, inline: true },
                 { name: '📝 Bio', value: `\`create\` \`reset\` \`help\``, inline: true },
-                { name: '👭 Codeami', value: `\`<n° de page>\` \`help\``, inline: true },
-                { name: `\u200b`, value: `\u200b` },
                 { name: '✈️ Dodocode', value: `\`create\` \`reset\` \`all\` \`<n° de page>\` \`help\``, inline: true },
-                { name: '🎟️ Waitinglist', value: `\`create\` \`reset\` \`next\` \`add\` \`delete\` \`help\``, inline: true },
-                { name: '💸 Wishlist', value: `\`create\` \`reset\` \`add\` \`delete\` \`n° de page\` \`search\` \`help\``, inline: true },
                 { name: `\u200b`, value: `\u200b` },
+                { name: '👭 Codeami', value: `\`<n° de page>\` \`help\``, inline: true },
+                { name: `☁️ Onirique`, value: `\`create\` \`reset\` \`<n° de page>\` \`help\``, inline: true },
+                { name: '🎟️ Waitinglist', value: `\`create\` \`reset\` \`next\` \`add\` \`delete\` \`help\``, inline: true },
+                { name: `\u200b`, value: `\u200b` },
+                { name: '💸 Wishlist', value: `\`create\` \`reset\` \`add\` \`delete\` \`n° de page\` \`search\` \`help\``, inline: true },
                 { name: '🔨 Craft', value: `\`create\` \`reset\` \`add\` \`delete\` \`n° de page\` \`search\` \`help\``, inline: true },
                 { name: '🎲 Card', value: `\`leaderboard\` \`points\` \`help\``, inline: true },
-                { name: `🕴️ Pnj`, value: `\`create\` \`reset\` \`search\` \`help\``, inline: true },
                 { name: `\u200b`, value: `\u200b` },
+                { name: `🕴️ Pnj`, value: `\`create\` \`reset\` \`search\` \`help\``, inline: true },
                 { name: `🏆 Badge`, value: `\`titre\` \`help\``, inline: true },
-                { name: `\u200b`, value: `\u200b`, inline: true },
                 { name: `\u200b`, value: `\u200b`, inline: true }
                 )
             newEmbed.setFooter(`Bot par Marie#1702`);

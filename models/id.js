@@ -26,6 +26,9 @@ const dataSchema = mongoose.Schema({
         type: String,
         required: true
     },
+    onirique: {
+        type: String
+    },
     bio: {
         type: String,
         default: 'Pas de bio, pour la modifier : \`ac!bio create \"Exemple\"\`'
