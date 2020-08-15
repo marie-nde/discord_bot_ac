@@ -10,6 +10,9 @@ Commands :
   
 - CODEAMI : (Friend code)
   This command allows you to display your friend code or someone else's, or everyone's friend code.
+
+- ONIRIQUE : (Dream code)
+  This command allows you to create a dream code, to display your dream code or someone else's, or everyone's dream code.
   
 - DODOCODE :
   This command allows you to create a temporary dodocode with a reason, to reset it, to display it or someone else's, and to see all the active dodocodes.
@@ -18,18 +21,19 @@ Commands :
   This command allows you to create a waitinglist of Discord members, to reset it, to go to the next person, to add or delete members, and to display your list or someone else's.
   
 - WISHLIST :
-  This command allows you to create a wishlist, to reset it, to add or delete objects, and to display your wishlist or someone else's.
+  This command allows you to create a wishlist, to reset it, to add or delete objects, to display your wishlist or someone else's, and to search through all lists.
   
 - CRAFT :
-  This command allows you to create a list of crafts, to reset it, to add or delete crafts, and to display your list or someone else's.
+  This command allows you to create a list of crafts, to reset it, to add or delete crafts, to display your list or someone else's, and to search through all lists.
+  
+- PNJ : (NPC)
+  This command allows you to create your daily NPC, to display your daily NPC or someone else's, and to search a NPC through all NPCs.
+  
+- BADGE :
+  This command allows you to display the badges you won or someone else's, and to display and chose a title to display on your passport.
   
 - CARD :
   This command starts a little game and allows you to see a leaderboard with the best players.
   
-- SEARCH :
-  This command allows you to search an item in every list of crafts.
-  
 - HELP :
   This command displays every command.
-
-Incoming features.
