@@ -1289,8 +1289,8 @@ client.on('message', async message => {
                     }
                 }
                 var newTitles = newTitre.splice(0, 20).join(`\n`);
-                var newBonus = bonus.join(`\n`);
-                var newBonus2 = bonus2.join(`\n`);
+                if (bonus) var newBonus = bonus.join(`\n`);
+                if (bonus2) var newBonus2 = bonus2.join(`\n`);
             }
             else var newTitles = newTitre.join('\n');
             let newEmbed = new Discord.MessageEmbed()
@@ -1556,8 +1556,8 @@ client.on('message', async message => {
                     }
                 }
                 var newTitles = newTitre.splice(0, 20).join(`\n`);
-                var newBonus = bonus.join(`\n`);
-                var newBonus2 = bonus2.join(`\n`);
+                if (bonus) var newBonus = bonus.join(`\n`);
+                if (bonus2) var newBonus2 = bonus2.join(`\n`);
             }
             else var newTitles = newTitre.join('\n');
             let newEmbed = new Discord.MessageEmbed()
@@ -1673,8 +1673,8 @@ client.on('message', async message => {
                     }
                 }
                 var newTitles = newTitre.splice(0, 20).join(`\n`);
-                var newBonus = bonus.join(`\n`);
-                var newBonus2 = bonus2.join(`\n`);
+                if (bonus) var newBonus = bonus.join(`\n`);
+                if (bonus2) var newBonus2 = bonus2.join(`\n`);
             }
             else var newTitles = newTitre.join('\n');
             let newEmbed = new Discord.MessageEmbed()
@@ -1947,8 +1947,8 @@ client.on('message', async message => {
                         }
                     }
                     var newTitles = newTitre.splice(0, 20).join(`\n`);
-                    var newBonus = bonus.join(`\n`);
-                    var newBonus2 = bonus2.join(`\n`);
+                    if (bonus) var newBonus = bonus.join(`\n`);
+                    if (bonus2) var newBonus2 = bonus2.join(`\n`);
                 }
                 else var newTitles = newTitre.join('\n');
                 let newEmbed = new Discord.MessageEmbed()
