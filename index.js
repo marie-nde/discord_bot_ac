@@ -157,7 +157,7 @@ client.on('message', async message => {
     }
 
     if (!message.content.startsWith(prefix)) {
-        if(str.message.content.toLowerCase()("zerator") !== -1){
+        if(message.content.toLowerCase().includes('zerator')){
             message.channel.send(`C'est qui Zerator ?`);
         }
     }
