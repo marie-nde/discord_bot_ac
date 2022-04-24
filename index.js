@@ -19,8 +19,6 @@ client.commands = new Discord.Collection();
 
 mongoose.connect('mongodb://localhost:27017/data', {
     useNewUrlParser: true,
-    useFindAndModify: false,
-    useCreateIndex:true,
     useUnifiedTopology: true }, (err) => {
         if (err) return console.error(err);
         console.log('Mongoose est prêt');
