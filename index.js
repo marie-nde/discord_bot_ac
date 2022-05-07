@@ -156,7 +156,9 @@ client.on('message', async message => {
 
     if (!message.content.startsWith(prefix)) {
         if (message.content.toLowerCase().includes('zerator')) {
-            message.channel.send(`C'est qui Zerator ?`);
+            const messages = ["Message1", "Message2", "Message3", "Message4"]
+            const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+            message.channel.send(randomMessage);
         }
     }
 
