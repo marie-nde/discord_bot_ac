@@ -163,43 +163,43 @@ client.on('message', async message => {
         }
         if (message.content.toLocaleLowerCase().includes('ponce')) {
             cdphotos = cdphotos + 1;
-            if (cdphotos % 5 == 0) {
+            if (cdphotos % 20 == 0) {
                 message.channel.send("Vous parlez de ce beau gosse ?", {files: ["photos/ponce.jpg"] });
             }
         }
         if (message.content.toLocaleLowerCase().includes('antoine daniel')) {
             cdphotos = cdphotos + 1;
-            if (cdphotos % 5 == 0) {
+            if (cdphotos % 20 == 0) {
                 message.channel.send("(:", {files: ["photos/antoine.jpg"] });
             }
         }
         if (message.content.toLocaleLowerCase().includes('kronomuzik')) {
             cdphotos = cdphotos + 1;
-            if (cdphotos % 5 == 0) {
+            if (cdphotos % 20 == 0) {
                 message.channel.send("Il regarde pas l'objectif...", {files: ["photos/kronomuzik.jpg"] });
             }
         }
         if (message.content.toLocaleLowerCase().includes('mister mv')) {
             cdphotos = cdphotos + 1;
-            if (cdphotos % 5 == 0) {
+            if (cdphotos % 20 == 0) {
                 message.channel.send("👉", {files: ["photos/mv.jpg"] });
             }
         }
         if (message.content.toLocaleLowerCase().includes('mynthos')) {
             cdphotos = cdphotos + 1;
-            if (cdphotos % 5 == 0) {
+            if (cdphotos % 20 == 0) {
                 message.channel.send("TW gameur juteux", {files: ["photos/mynthos.jpg"] });
             }
         }
         if (message.content.toLocaleLowerCase().includes('rivenzi')) {
             cdphotos = cdphotos + 1;
-            if (cdphotos % 5 == 0) {
+            if (cdphotos % 20 == 0) {
                 message.channel.send({files: ["photos/rivenzi.jpg"]});
             }
         }
         if (message.content.toLocaleLowerCase().includes('ultia')) {
             cdphotos = cdphotos + 1;
-            if (cdphotos % 5 == 0) {
+            if (cdphotos % 20 == 0) {
                 message.channel.send("Ça, c'est pas très ratus", {files: ["photos/ultia.jpg"] });
             }
         }
