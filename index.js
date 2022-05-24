@@ -188,7 +188,7 @@ client.on('message', async message => {
         if (message.content.toLocaleLowerCase().includes('mynthos')) {
             cdphotos = cdphotos + 1;
             if (cdphotos % 5 == 0) {
-                message.channel.send("TV gameur juteux", {files: ["photos/mynthos.jpg"] });
+                message.channel.send("TW gameur juteux", {files: ["photos/mynthos.jpg"] });
             }
         }
         if (message.content.toLocaleLowerCase().includes('rivenzi')) {
