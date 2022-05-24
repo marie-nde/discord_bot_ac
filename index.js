@@ -164,7 +164,7 @@ client.on('message', async message => {
         if (message.content.toLocaleLowerCase().includes('ponce')) {
             cdphotos = cdphotos + 1;
             if (cdphotos % 5 == 0) {
-                message.channel.send("Vous parlez de ce beau gosse ?");
+                message.channel.send("Vous parlez de ce beau gosse ?", {files: ["photos/ponce.jpg"] });
             }
         }
     }
