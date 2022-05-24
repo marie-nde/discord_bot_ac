@@ -188,19 +188,19 @@ client.on('message', async message => {
         if (message.content.toLocaleLowerCase().includes('mynthos')) {
             cdphotos = cdphotos + 1;
             if (cdphotos % 5 == 0) {
-                message.channel.send("👉", {files: ["photos/mynthos.jpg"] });
+                message.channel.send("TV gameur juteux", {files: ["photos/mynthos.jpg"] });
             }
         }
         if (message.content.toLocaleLowerCase().includes('rivenzi')) {
             cdphotos = cdphotos + 1;
             if (cdphotos % 5 == 0) {
-                message.channel.send("👉", {files: ["photos/rivenzi.jpg"] });
+                message.channel.send({files: ["photos/rivenzi.jpg"]});
             }
         }
         if (message.content.toLocaleLowerCase().includes('ultia')) {
             cdphotos = cdphotos + 1;
             if (cdphotos % 5 == 0) {
-                message.channel.send("👉", {files: ["photos/ultia.jpg"] });
+                message.channel.send("Ça, c'est pas très ratus", {files: ["photos/ultia.jpg"] });
             }
         }
     }
