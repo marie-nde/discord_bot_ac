@@ -13,6 +13,7 @@ const Pnj = require('./models/pnj');
 const Badge = require ('./models/badge');
 let cooldown = new Set();
 let cdseconds = 180;
+let cdphotos = 0;
 
 const client = new Discord.Client();
 client.commands = new Discord.Collection();
@@ -156,9 +157,15 @@ client.on('message', async message => {
 
     if (!message.content.startsWith(prefix)) {
         if (message.content.toLowerCase().includes('zerator')) {
-            const messages = ["C'est qui Zerator ?", "Zera-quoi ?", "J'y connais rien à Twitch...", "?"]
+            const messages = ["C'est qui Zerator ?", "Zera-quoi ?", "J'y connais rien à Twitch..."]
             const randomMessage = messages[Math.floor(Math.random() * messages.length)];
             message.channel.send(randomMessage);
+        }
+        if (message.content.toLocaleLowerCase().includes('ponce')) {
+            cdphotos = cdphotos + 1;
+            if (cdphotos % 5 == 0) {
+                message.channel.send("Vous parlez de ce beau gosse ?");
+            }
         }
     }
 
