@@ -167,6 +167,42 @@ client.on('message', async message => {
                 message.channel.send("Vous parlez de ce beau gosse ?", {files: ["photos/ponce.jpg"] });
             }
         }
+        if (message.content.toLocaleLowerCase().includes('antoine daniel')) {
+            cdphotos = cdphotos + 1;
+            if (cdphotos % 5 == 0) {
+                message.channel.send("(:", {files: ["photos/antoine.jpg"] });
+            }
+        }
+        if (message.content.toLocaleLowerCase().includes('kronomuzik')) {
+            cdphotos = cdphotos + 1;
+            if (cdphotos % 5 == 0) {
+                message.channel.send("Il regarde pas l'objectif...", {files: ["photos/kronomuzik.jpg"] });
+            }
+        }
+        if (message.content.toLocaleLowerCase().includes('mister mv')) {
+            cdphotos = cdphotos + 1;
+            if (cdphotos % 5 == 0) {
+                message.channel.send("👉", {files: ["photos/mv.jpg"] });
+            }
+        }
+        if (message.content.toLocaleLowerCase().includes('mynthos')) {
+            cdphotos = cdphotos + 1;
+            if (cdphotos % 5 == 0) {
+                message.channel.send("👉", {files: ["photos/mynthos.jpg"] });
+            }
+        }
+        if (message.content.toLocaleLowerCase().includes('rivenzi')) {
+            cdphotos = cdphotos + 1;
+            if (cdphotos % 5 == 0) {
+                message.channel.send("👉", {files: ["photos/rivenzi.jpg"] });
+            }
+        }
+        if (message.content.toLocaleLowerCase().includes('ultia')) {
+            cdphotos = cdphotos + 1;
+            if (cdphotos % 5 == 0) {
+                message.channel.send("👉", {files: ["photos/ultia.jpg"] });
+            }
+        }
     }
 
     if (message.channel.id === '710850779522793513' || message.channel.id === '709401660832743435' || message.channel.id === '709419639578558555' || message.channel.id === '709419650030764073' || message.channel.id === '709452009031598160' || message.channel.id === '709787337634086993' || message.channel.id === '722062401763016745') {
