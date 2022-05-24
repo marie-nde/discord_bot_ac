@@ -43,6 +43,13 @@ client.on('message', async message => {
     var obj = null;
     if (args.length > 0) var obj = args.shift().toLowerCase();
 
+    if (message.channel.id) {
+        const channel = channels.cache.get(message.channel.id);
+    }
+    else if (message.thread.id) {
+        const channel = channels.cache.get(message.thread.id);
+    }
+
     var color = '#ecd89a';
     if (message.member.roles.cache.has("710067193282297858")) { var color = '#f19d5a'; } // orange
     else if (message.member.roles.cache.has("710067087183183913")) { var color = '#c289e7'; } // violet
