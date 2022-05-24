@@ -43,11 +43,12 @@ client.on('message', async message => {
     var obj = null;
     if (args.length > 0) var obj = args.shift().toLowerCase();
 
+
     if (message.channel.id) {
-        const channel = channels.cache.get(message.channel.id);
+        const channel = channel;
     }
     else if (message.thread.id) {
-        const channel = channels.cache.get(message.thread.id);
+        const channel = thread;
     }
 
     var color = '#ecd89a';
