@@ -205,7 +205,7 @@ client.on('message', async message => {
         }
     }
 
-    if (message.channel.id === '710850779522793513' || message.channel.id === '709401660832743435' || message.channel.id === '709419639578558555' || message.channel.id === '709419650030764073' || message.channel.id === '709452009031598160' || message.channel.id === '709787337634086993' || message.channel.id === '722062401763016745') {
+    if (message.channel.id === '709401660832743435' || message.channel.id === '978765502677659669' || message.channel.id === '978762778179436546' || message.channel.id === '728214468785471558') {
         var checkBadge = await Badge.findOne({
             userID: message.author.id,
             serverID: message.guild.id
