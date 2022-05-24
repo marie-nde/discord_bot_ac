@@ -43,14 +43,6 @@ client.on('message', async message => {
     var obj = null;
     if (args.length > 0) var obj = args.shift().toLowerCase();
 
-
-    if (message.channel.id) {
-        const channel = channel;
-    }
-    else if (message.thread.id) {
-        const channel = thread;
-    }
-
     var color = '#ecd89a';
     if (message.member.roles.cache.has("710067193282297858")) { var color = '#f19d5a'; } // orange
     else if (message.member.roles.cache.has("710067087183183913")) { var color = '#c289e7'; } // violet
@@ -213,7 +205,7 @@ client.on('message', async message => {
         }
     }
 
-    if (message.channel.id === '709401660832743435' || message.thread.id === '978765502677659669' || message.thread.id === '978762778179436546' || message.channel.id === '728214468785471558') {
+    if (message.channel.id === '709401660832743435' || message.channel.id === '722062401763016745' || message.channel.id === '728214468785471558') {
         var checkBadge = await Badge.findOne({
             userID: message.author.id,
             serverID: message.guild.id
