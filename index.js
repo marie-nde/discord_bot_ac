@@ -155,11 +155,14 @@ client.on('message', async message => {
         }
     }
 
-    if (!message.content.startsWith(prefix)) {
+    if (!message.content.startsWith(prefix) && (message.channel.id === '773973416864120843' || message.channel.id === '728214468785471558')) {
         if (message.content.toLowerCase().includes('zerator')) {
             const messages = ["C'est qui Zerator ?", "Zera-quoi ?", "J'y connais rien à Twitch..."]
             const randomMessage = messages[Math.floor(Math.random() * messages.length)];
             message.channel.send(randomMessage);
+        }
+        if (message.content.toLowerCase().startWith('feur')) {
+            message.channel.send("Cringe malaise...");
         }
         if (message.content.toLocaleLowerCase().includes('ponce')) {
             cdphotos = cdphotos + 1;
