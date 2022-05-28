@@ -161,7 +161,7 @@ client.on('message', async message => {
             const randomMessage = messages[Math.floor(Math.random() * messages.length)];
             message.channel.send(randomMessage);
         }
-        if (message.content.toLowerCase().startWith('feur')) {
+        if (message.content.toLowerCase().startsWith('feur')) {
             message.channel.send("Cringe malaise...");
         }
         if (message.content.toLocaleLowerCase().includes('ponce')) {
