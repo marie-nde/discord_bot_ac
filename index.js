@@ -43,13 +43,6 @@ client.on('message', async message => {
     var obj = null;
     if (args.length > 0) var obj = args.shift().toLowerCase();
 
-    var color = '#ecd89a';
-    if (message.member.roles.cache.has("710067193282297858")) { var color = '#f19d5a'; } // orange
-    else if (message.member.roles.cache.has("710067087183183913")) { var color = '#c289e7'; } // violet
-    else if (message.member.roles.cache.has("710067008011632641")) { var color = '#f894d0'; } // rose
-    else if (message.member.roles.cache.has("710067235250634873")) { var color = '#78b1e4'; } // bleu
-    else if (message.member.roles.cache.has("710067124886044735")) { var color = '#4db886'; } // vert
-
     var checkUser = await Users.findOne({
         userID: message.author.id,
         serverID: message.guild.id,
@@ -157,12 +150,12 @@ client.on('message', async message => {
 
     if (!message.content.startsWith(prefix) && (message.channel.id === '773973416864120843' || message.channel.id === '728214468785471558')) {
         if (message.content.toLowerCase().includes('zerator')) {
-            const messages = ["C'est qui Zerator ?", "Zera-quoi ?", "J'y connais rien à Twitch..."]
+            const messages = ["Je connais Zerator !", "Zerator, c'est le mec de Twitch, non ?", "Zerator, je le suis depuis super longtemps moi !"]
             const randomMessage = messages[Math.floor(Math.random() * messages.length)];
             message.channel.send(randomMessage);
         }
         if (message.content.toLowerCase().startsWith('feur')) {
-            message.channel.send("Cringe malaise...");
+            message.channel.send("Bon...");
         }
         if (message.content.toLocaleLowerCase().includes('ponce')) {
             cdphotos = cdphotos + 1;
@@ -209,6 +202,12 @@ client.on('message', async message => {
     }
 
     if (message.channel.id === '709401660832743435' || message.channel.id === '722062401763016745' || message.channel.id === '728214468785471558') {
+        var color = '#ecd89a'; // jaune
+        if (message.member.roles.cache.has("710067193282297858")) { var color = '#f19d5a'; } // orange
+        else if (message.member.roles.cache.has("710067087183183913")) { var color = '#c289e7'; } // violet
+        else if (message.member.roles.cache.has("710067008011632641")) { var color = '#f894d0'; } // rose
+        else if (message.member.roles.cache.has("710067235250634873")) { var color = '#78b1e4'; } // bleu
+        else if (message.member.roles.cache.has("710067124886044735")) { var color = '#4db886'; } // vert
         var checkBadge = await Badge.findOne({
             userID: message.author.id,
             serverID: message.guild.id
@@ -217,7 +216,7 @@ client.on('message', async message => {
             var checkBadge = new Badge({
                 _id: mongoose.Types.ObjectId(),
                 userID: message.author.id,
-                serverID: message.guild.id,
+                serverID: message.guild.id
             })
             await checkBadge.save();
         }
