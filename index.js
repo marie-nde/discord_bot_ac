@@ -15,7 +15,10 @@ let cooldown = new Set();
 let cdseconds = 180;
 let cdphotos = 0;
 
-const client = new Discord.Client();
+const client = new Discord.Client({
+    partials: ["REACTION", "MESSAGE"],
+    ws: { intents: ["GUILDS", "GUILD_MESSAGES"] }
+});
 client.commands = new Discord.Collection();
 
 mongoose.connect('mongodb://localhost:27017/data', {
