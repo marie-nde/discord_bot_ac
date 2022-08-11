@@ -1,6 +1,8 @@
 # discord_bot_ac
 A Discord bot for Animal Crossing players.
 
+Not updated for Discord updated versions /!\
+
 Commands :
 - PASSPORT :
   This command allows you to create a passport with ingame information, to reset it and to display your passport or someone else's.
